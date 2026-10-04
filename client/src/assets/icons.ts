@@ -1,0 +1,5 @@
+export { IoMdEye as EyesOnIcon, IoMdEyeOff as EyesOffIcon, IoMdMenu as MenuIcon } from 'react-icons/io'
+export { FaGithub as GitHubIcon } from 'react-icons/fa6'
+export { FaDownload as DownloadIcon, FaCheck as CheckedOKIcon } from 'react-icons/fa'
+export { AiOutlineClose as CloseTabIcon, AiOutlineLoading as LoadingSpinIcon, AiOutlineCheckCircle as SuccessStatusIcon } from 'react-icons/ai'
+export { IoSearch as SearchIcon } from 'react-icons/io5'

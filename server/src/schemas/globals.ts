@@ -1,0 +1,356 @@
+import z from 'zod'
+
+export const OBJECT_ID_REGEX = /^[0-9a-f]{24}$/
+export const TOKEN_SHA256_REGEX = /[a-f0-9]{64}/
+
+export const serverEnvSchema = {
+	type: 'object',
+	required: ['PORT', 'JWT_SECRET'],
+	properties: {
+		NODE_ENV: {
+			anyOf: [
+				{ type: 'string', const: 'development' },
+				{ type: 'string', const: 'production' },
+			],
+			default: 'production',
+		},
+		PORT: { type: 'number' },
+
+		DISABLE_PASSWORD_VALIDATOR: { default: false, type: 'boolean' },
+		JWT_SECRET: { type: 'string' },
+		LOG_SUCCESS: { default: false, type: 'boolean' },
+		LOG_TOKENS: { default: false, type: 'boolean' },
+		NON_EXPIRING_TOKENS: { default: false, type: 'boolean' },
+		SERVER_LOG: { default: false, type: 'boolean' },
+	},
+} as const
+
+/*
+Schema for the environment variables needed to start the server.
+Initalized as a fastify decorator on `server\src\core\plugins\env.ts`.
+*/
+export const serverEnvObject = z.object({
+	NODE_ENV: z.union([z.literal('development'), z.literal('production')]),
+	PORT: z.number().positive(),
+
+	DISABLE_PASSWORD_VALIDATOR: z.boolean().optional().default(false),
+	JWT_SECRET: z.string(),
+	LOG_SUCCESS: z.boolean().optional().default(false),
+	LOG_TOKENS: z.boolean().optional().default(false),
+	NON_EXPIRING_TOKENS: z.boolean().optional().default(false),
+	SERVER_LOG: z.boolean().optional().default(false),
+})
+export type ServerEnvObject = z.infer<typeof serverEnvObject>
+
+/*
+Schema for the server generic response object (without additional values).
+This response pattern must be sent for every route on the server.
+*/
+export const genericServerResponse = z.object({
+	statusCode: z.int(),
+	statusName: z.string(),
+	code: z.string(),
+	message: z.string(),
+})
+export type GenericServerResponse = z.infer<typeof genericServerResponse>
+
+/*
+Schema for the object template that will be signed as a token for every user for authentication.
+*/
+export const signedUserTokenObjectSchema = z.object({
+	sub: z.string().regex(OBJECT_ID_REGEX),
+	rank: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
+})
+export type SignedUserTokenObject = z.infer<typeof signedUserTokenObjectSchema>
+
+export const decodedUserTokenObjectSchema = z.object({
+	sub: z.string().regex(OBJECT_ID_REGEX),
+	rank: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
+	iat: z.int(),
+	exp: z.int(),
+})
+export type DecodedUserTokenObject = z.infer<typeof decodedUserTokenObjectSchema>
+
+export const userIdParams = z.object({ userId: z.string().regex(OBJECT_ID_REGEX).describe('The user ID') })
+export type UserIdParams = z.infer<typeof userIdParams>
+
+export const songIdParams = z.object({ songId: z.string().regex(OBJECT_ID_REGEX).describe('The song ID') })
+export type SongIdParams = z.infer<typeof songIdParams>
+
+export const imageProcessingParamsSchema = z.object({
+	v: z
+		.string()
+		.transform((val) => parseInt(val))
+		.pipe(z.int().nonnegative())
+		.default(0)
+		.describe('Avatar versioning (abstract value for URL caching)'),
+	format: z.enum(['jpg', 'jpeg', 'gif', 'png', 'webp']).optional().describe('The output format of the avatar image'),
+	size: z
+		.string()
+		.transform((val) => parseInt(val))
+		.pipe(z.int().positive().max(256))
+		.default(256)
+		.describe('The output image size. Max is 256'),
+	quality: z
+		.string()
+		.transform((val) => parseInt(val))
+		.pipe(z.number().positive().max(100))
+		.default(85)
+		.describe('The output quality of the image (only used with lossy image formats)'),
+})
+export type ImageProcessingParams = z.infer<typeof imageProcessingParamsSchema>
+
+export const countryCodeSchema = z.union([
+	z.literal('ad'),
+	z.literal('ae'),
+	z.literal('af'),
+	z.literal('ag'),
+	z.literal('ai'),
+	z.literal('al'),
+	z.literal('am'),
+	z.literal('ao'),
+	z.literal('aq'),
+	z.literal('ar'),
+	z.literal('as'),
+	z.literal('at'),
+	z.literal('au'),
+	z.literal('aw'),
+	z.literal('ax'),
+	z.literal('az'),
+	z.literal('ba'),
+	z.literal('bb'),
+	z.literal('bd'),
+	z.literal('be'),
+	z.literal('bf'),
+	z.literal('bg'),
+	z.literal('bh'),
+	z.literal('bi'),
+	z.literal('bj'),
+	z.literal('bl'),
+	z.literal('bm'),
+	z.literal('bn'),
+	z.literal('bo'),
+	z.literal('bq'),
+	z.literal('br'),
+	z.literal('bs'),
+	z.literal('bt'),
+	z.literal('bv'),
+	z.literal('bw'),
+	z.literal('by'),
+	z.literal('bz'),
+	z.literal('ca'),
+	z.literal('cc'),
+	z.literal('cd'),
+	z.literal('cf'),
+	z.literal('cg'),
+	z.literal('ch'),
+	z.literal('ci'),
+	z.literal('ck'),
+	z.literal('cl'),
+	z.literal('cm'),
+	z.literal('cn'),
+	z.literal('co'),
+	z.literal('cr'),
+	z.literal('cu'),
+	z.literal('cv'),
+	z.literal('cw'),
+	z.literal('cx'),
+	z.literal('cy'),
+	z.literal('cz'),
+	z.literal('de'),
+	z.literal('dj'),
+	z.literal('dk'),
+	z.literal('dm'),
+	z.literal('do'),
+	z.literal('dz'),
+	z.literal('ec'),
+	z.literal('ee'),
+	z.literal('eg'),
+	z.literal('eh'),
+	z.literal('er'),
+	z.literal('es'),
+	z.literal('et'),
+	z.literal('fi'),
+	z.literal('fj'),
+	z.literal('fk'),
+	z.literal('fm'),
+	z.literal('fo'),
+	z.literal('fr'),
+	z.literal('ga'),
+	z.literal('gb'),
+	z.literal('gd'),
+	z.literal('ge'),
+	z.literal('gf'),
+	z.literal('gg'),
+	z.literal('gh'),
+	z.literal('gi'),
+	z.literal('gl'),
+	z.literal('gm'),
+	z.literal('gn'),
+	z.literal('gp'),
+	z.literal('gq'),
+	z.literal('gr'),
+	z.literal('gs'),
+	z.literal('gt'),
+	z.literal('gu'),
+	z.literal('gw'),
+	z.literal('gy'),
+	z.literal('hk'),
+	z.literal('hm'),
+	z.literal('hn'),
+	z.literal('hr'),
+	z.literal('ht'),
+	z.literal('hu'),
+	z.literal('id'),
+	z.literal('ie'),
+	z.literal('il'),
+	z.literal('im'),
+	z.literal('in'),
+	z.literal('io'),
+	z.literal('iq'),
+	z.literal('ir'),
+	z.literal('is'),
+	z.literal('it'),
+	z.literal('je'),
+	z.literal('jm'),
+	z.literal('jo'),
+	z.literal('jp'),
+	z.literal('ke'),
+	z.literal('kg'),
+	z.literal('kh'),
+	z.literal('ki'),
+	z.literal('km'),
+	z.literal('kn'),
+	z.literal('kp'),
+	z.literal('kr'),
+	z.literal('kw'),
+	z.literal('ky'),
+	z.literal('kz'),
+	z.literal('la'),
+	z.literal('lb'),
+	z.literal('lc'),
+	z.literal('li'),
+	z.literal('lk'),
+	z.literal('lr'),
+	z.literal('ls'),
+	z.literal('lt'),
+	z.literal('lu'),
+	z.literal('lv'),
+	z.literal('ly'),
+	z.literal('ma'),
+	z.literal('mc'),
+	z.literal('md'),
+	z.literal('me'),
+	z.literal('mf'),
+	z.literal('mg'),
+	z.literal('mh'),
+	z.literal('mk'),
+	z.literal('ml'),
+	z.literal('mm'),
+	z.literal('mn'),
+	z.literal('mo'),
+	z.literal('mp'),
+	z.literal('mq'),
+	z.literal('mr'),
+	z.literal('ms'),
+	z.literal('mt'),
+	z.literal('mu'),
+	z.literal('mv'),
+	z.literal('mw'),
+	z.literal('mx'),
+	z.literal('my'),
+	z.literal('mz'),
+	z.literal('na'),
+	z.literal('nc'),
+	z.literal('ne'),
+	z.literal('nf'),
+	z.literal('ng'),
+	z.literal('ni'),
+	z.literal('nl'),
+	z.literal('no'),
+	z.literal('np'),
+	z.literal('nr'),
+	z.literal('nu'),
+	z.literal('nz'),
+	z.literal('om'),
+	z.literal('pa'),
+	z.literal('pe'),
+	z.literal('pf'),
+	z.literal('pg'),
+	z.literal('ph'),
+	z.literal('pk'),
+	z.literal('pl'),
+	z.literal('pm'),
+	z.literal('pn'),
+	z.literal('pr'),
+	z.literal('ps'),
+	z.literal('pt'),
+	z.literal('pw'),
+	z.literal('py'),
+	z.literal('qa'),
+	z.literal('re'),
+	z.literal('ro'),
+	z.literal('rs'),
+	z.literal('ru'),
+	z.literal('rw'),
+	z.literal('sa'),
+	z.literal('sb'),
+	z.literal('sc'),
+	z.literal('sd'),
+	z.literal('se'),
+	z.literal('sg'),
+	z.literal('sh'),
+	z.literal('si'),
+	z.literal('sj'),
+	z.literal('sk'),
+	z.literal('sl'),
+	z.literal('sm'),
+	z.literal('sn'),
+	z.literal('so'),
+	z.literal('sr'),
+	z.literal('ss'),
+	z.literal('st'),
+	z.literal('sv'),
+	z.literal('sx'),
+	z.literal('sy'),
+	z.literal('sz'),
+	z.literal('tc'),
+	z.literal('td'),
+	z.literal('tf'),
+	z.literal('tg'),
+	z.literal('th'),
+	z.literal('tj'),
+	z.literal('tk'),
+	z.literal('tl'),
+	z.literal('tm'),
+	z.literal('tn'),
+	z.literal('to'),
+	z.literal('tr'),
+	z.literal('tt'),
+	z.literal('tv'),
+	z.literal('tw'),
+	z.literal('tz'),
+	z.literal('ua'),
+	z.literal('ug'),
+	z.literal('um'),
+	z.literal('us'),
+	z.literal('uy'),
+	z.literal('uz'),
+	z.literal('va'),
+	z.literal('vc'),
+	z.literal('ve'),
+	z.literal('vg'),
+	z.literal('vi'),
+	z.literal('vn'),
+	z.literal('vu'),
+	z.literal('wf'),
+	z.literal('ws'),
+	z.literal('ye'),
+	z.literal('yt'),
+	z.literal('za'),
+	z.literal('zm'),
+	z.literal('zw'),
+])
+
+export const countryCodeSchemaWithUnselected = z.union([countryCodeSchema, z.literal('')])
+export type CountryCodeWithUnselected = z.infer<typeof countryCodeSchemaWithUnselected>

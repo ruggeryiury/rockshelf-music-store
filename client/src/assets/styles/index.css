@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+
+/* Fonts */
+@font-face {
+	font-family: 'Pentatonic';
+	src: url('../fonts/pentatonic_reg.woff2') format('woff2');
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Nobel';
+	src: url('../fonts/nobel-light.woff2') format('woff2');
+	font-display: swap;
+	font-weight: 400;
+}
+@font-face {
+	font-family: 'Nobel';
+	src: url('../fonts/nobel.woff2') format('woff2');
+	font-display: swap;
+	font-weight: 600;
+}
+@font-face {
+	font-family: 'Nobel';
+	src: url('../fonts/nobel-bold.woff2') format('woff2');
+	font-display: swap;
+	font-weight: 900;
+}
+
+@theme {
+	/* Breakpoints */
+	/* --breakpoint-mobile: 0px; */
+	--breakpoint-mobile-md: 320px;
+	--breakpoint-mobile-lg: 375px;
+	--breakpoint-tablet: 425px;
+	--breakpoint-tablet-md: 600px;
+	--breakpoint-tablet-lg: 768px;
+	--breakpoint-laptop: 1024px;
+	--breakpoint-hd: 1290px;
+	--breakpoint-laptop-lg: 1366px;
+	--breakpoint-desktop: 1440px;
+
+	/* Fonts */
+	--font-pentatonic: 'Pentatonic', sans-serif;
+	--font-nobel: 'Nobel', sans-serif;
+}
+
+@layer base {
+	body {
+		line-height: 1.25;
+		color: var(--color-default-white);
+		width: 100%;
+		font-family: var(--font-nobel);
+		background: linear-gradient(0deg, #1b1b1c 0%, #101010 100%);
+		color: #bbb;
+		font-weight: 400;
+	}
+
+	body,
+	header,
+	footer,
+	div,
+	form,
+	section,
+	a {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+	}
+
+	a {
+		display: inline;
+		flex-direction: column;
+		font-family: var(--font-open);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	a:hover {
+		text-decoration-line: underline;
+		color: #ddd;
+	}
+
+	button a:hover {
+		text-decoration: none;
+	}
+
+	button {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		width: fit-content;
+		cursor: pointer;
+	}
+
+	#root {
+		width: 100%;
+		height: 100vh;
+		min-height: 100vh;
+		overflow-x: hidden;
+	}
+	h1 {
+		font-family: var(--font-pentatonic);
+	}
+	input {
+		@apply border border-white/20 hover:border-white/30 focus:border-white/40 active:border-white/50;
+	}
+}
+
+* {
+	outline: 0;
+}
