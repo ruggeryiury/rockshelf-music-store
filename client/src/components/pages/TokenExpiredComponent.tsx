@@ -7,7 +7,7 @@ export function TokenExpiredComponent() {
 	const { t } = useTranslation()
 	const { removeToken } = useServerQuery()
 	return (
-		<div className="absolute z-50 h-screen w-full items-center justify-center bg-black/96 text-center backdrop-blur-lg">
+		<div className="absolute z-50 h-screen w-full items-center justify-center bg-black/96 px-6 text-center backdrop-blur-lg">
 			<h1 className="mb-2 text-4xl uppercase">{t('token_expired')}</h1>
 			<h2>
 				<TransComponent

@@ -92,7 +92,9 @@ function RouteComponent() {
 		<>
 			<motion.div initial={{ opacity: 0, display: 'none' }} animate={showSuccessModal ? { opacity: 1, display: 'flex' } : { opacity: 0, display: 'none' }} className="absolute z-1 h-screen w-full items-center justify-center bg-black/90 p-8 text-center backdrop-blur-lg">
 				<h1 className="mb-1 text-3xl uppercase">{t('register_success_title')}</h1>
-				<p className="mb-4">{t('register_success_desc')}</p>
+				<p className="mb-4">
+					<TransComponent i18nKey="register_success_desc" />
+				</p>
 				<button
 					type="button"
 					className="font-pentatonic rounded-sm border border-neutral-500 p-1 text-neutral-500 uppercase duration-100 hover:border-neutral-300 hover:text-neutral-300"

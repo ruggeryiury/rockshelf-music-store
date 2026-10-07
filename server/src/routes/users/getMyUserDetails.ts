@@ -35,7 +35,7 @@ export const getMyUserDetails = fp((fastify, _, done) => {
 				code: 'SUCCESS_GET_MYUSER_DETAILS',
 				data: {
 					user,
-					// songsCount: await fastify.dbFuncs.songs.countUserSongs(user.id)
+					songsCount: await fastify.dbFuncs.songs.countUserSongs(user._id),
 				},
 			})
 		},

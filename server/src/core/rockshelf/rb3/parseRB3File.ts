@@ -1,6 +1,6 @@
 import { BinaryReader, type FilePathLikeTypes, pathLikeToFilePath } from 'node-lib'
 
-import { type RSPackImagePackageCategoryNumbers, type RSPackImagePackageCategoryValues, rsPackImage } from '../parseRSPackImage'
+import { type RSPackImagePackageCategoryNumbers, type RSPackImagePackageCategoryValues, rsPackImage } from '../rspackimg/parseRSPackImage'
 import { dateISOFormatObjectToDateISOString } from '../utils'
 
 export const RB3_HEADER_SIZE = 0x60

@@ -1,6 +1,7 @@
-import type { Collection, ObjectId, WithId } from 'mongodb'
+import type { Collection, WithId } from 'mongodb'
 
-import type { DecodedUserTokenObject, ServerEnvObject, SignedUserTokenObject, UserDocument, VerificationDocument } from './schemas'
+import type { DecodedUserTokenObject, ServerEnvObject, SignedUserTokenObject } from './schemas'
+import type { AlbumDocument, ArtistDocument, SongDocument, UserDocument, VerificationDocument } from './schemas/db'
 
 declare module 'fastify' {
 	interface FastifyRequest {
@@ -34,11 +35,11 @@ declare module 'fastify' {
 
 		db: {
 			users: Collection<UserDocument>
-			// songs: Collection<SongDocument>
+			songs: Collection<SongDocument>
 			accVerifications: Collection<VerificationDocument>
 			passResetVerifications: Collection<VerificationDocument>
-			// artists: Collection<ArtistDocument>
-			// albums: Collection<AlbumDocument>
+			artists: Collection<ArtistDocument>
+			albums: Collection<AlbumDocument>
 		}
 		dbFuncs: {
 			users: {
@@ -96,18 +97,19 @@ declare module 'fastify' {
 				 */
 				hashToken: (verificationToken: string) => string
 			}
-			// songs: {
-			// 	findById: (id: string) => Promise<WithId<SongDocument> | null>
-			// 	countUserSongs: (userId: ObjectId | string) => Promise<number>
-			// }
-			// artists: {
-			// 	findById: (id: string) => Promise<WithId<ArtistDocument> | null>
-			// 	findByHash: (hash: string) => Promise<WithId<ArtistDocument> | null>
-			// }
-			// albums: {
-			// 	findById: (id: string) => Promise<WithId<AlbumDocument> | null>
-			// 	findByHash: (hash: string) => Promise<WithId<AlbumDocument> | null>
-			// }
+			songs: {
+				findById: (id: string) => Promise<WithId<SongDocument> | null>
+				findBySongId: (songId: number) => Promise<WithId<SongDocument> | null>
+				countUserSongs: (userId: ObjectId | string) => Promise<number>
+			}
+			artists: {
+				findById: (id: string) => Promise<WithId<ArtistDocument> | null>
+				findByHash: (hash: string) => Promise<WithId<ArtistDocument> | null>
+			}
+			albums: {
+				findById: (id: string) => Promise<WithId<AlbumDocument> | null>
+				findByHash: (hash: string) => Promise<WithId<AlbumDocument> | null>
+			}
 		}
 	}
 }

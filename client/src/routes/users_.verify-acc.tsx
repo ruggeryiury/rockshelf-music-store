@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import z from 'zod'
 import { useServerQuery } from '../hooks/useServerQuery'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PageLoadComponent } from '../components/pages/PageLoadComponent'
+import { userVerifyAccBodySchema } from 'rockshelf-core/schemas'
 
 function ErrorComponent() {
 	const { t } = useTranslation()
@@ -26,11 +26,9 @@ function ErrorComponent() {
 	)
 }
 
-export const Route = createFileRoute('/verify-account')({
+export const Route = createFileRoute('/users_/verify-acc')({
 	component: RouteComponent,
-	validateSearch: z.object({
-		token: z.string().regex(/[a-f0-9]{64}/),
-	}),
+	validateSearch: userVerifyAccBodySchema,
 	errorComponent: ErrorComponent,
 })
 function RouteComponent() {
@@ -44,10 +42,10 @@ function RouteComponent() {
 	}, [token])
 
 	useEffect(() => {
-		console.log('aksdjskjdaksj')
+		console.log('aksdjskjdaksj:', verifyAcc.data)
 	}, [verifyAcc.data])
 
-	if (status === 'pending') return <PageLoadComponent />
+	if (verifyAcc.isPending) return <PageLoadComponent />
 	else if (verifyAcc.data) {
 		if (verifyAcc.data.statusCode !== 200) throw Error()
 		queryClient.invalidateQueries({ queryKey: ['details'] })

@@ -1,8 +1,6 @@
 import z from 'zod'
 
-import { TOKEN_SHA256_REGEX, countryCodeSchemaWithUnselected, dbSerializedSharedUserDocumentSchema, genericServerResponse } from '@schemas'
-
-import '../globals'
+import { countryCodeSchemaWithUnselected, dbSerializedSharedUserDocumentSchema, genericServerResponse } from '@schemas'
 
 // #region GET users/me/status
 export const getMyStatusSuccessSchema = genericServerResponse.extend({ data: z.object({ verified: z.boolean(), verifiedAt: z.instanceof(Date).optional() }).optional() })
@@ -93,7 +91,7 @@ export type UserRegisterBody = z.infer<typeof userRegisterBodySchema>
 
 // #region POST users/verify-acc
 export const userVerifyAccBodySchema = z.object({
-	token: z.string().regex(TOKEN_SHA256_REGEX),
+	token: z.base64url(),
 })
 
 export type UserVerifyAccBody = z.infer<typeof userVerifyAccBodySchema>

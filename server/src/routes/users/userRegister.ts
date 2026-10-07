@@ -32,12 +32,12 @@ export const userRegister = fp((fastify, _, done) => {
 			const passwordHash = await fastify.dbFuncs.users.hashPassword(password)
 
 			try {
-				const newUser = await fastify.db.users.insertOne({ _id: new fastify.mongo.ObjectId(), username, email, passwordHash, createdAt: now, modifiedAt: now, rank: 0, country: null, verified: false, active: true, avatarVer: 0 })
+				const newUser = await fastify.db.users.insertOne({ _id: new fastify.mongo.ObjectId(), username, email, passwordHash, createdAt: now, modifiedAt: now, rank: 0, country: '', verified: false, active: true, avatarVer: 0 })
 
 				const { token, tokenHash } = await fastify.dbFuncs.verifications.genVerificationToken()
 
 				// TO-DO: Implement e-mail send logic
-				if (reply.server.env.LOG_TOKENS) LogAPI.log(`${LogAPI.chalk.bgGreen('TOKEN EMITTED')} ${LogAPI.chalk.cyan(LogAPI.chalk.italic(email))} - ${LogAPI.chalk.gray(token)}\nTOKEN HASH: ${tokenHash}`)
+				if (reply.server.env.LOG_TOKENS) LogAPI.log(`${LogAPI.chalk.bgGreen('TOKEN EMITTED')} ${LogAPI.chalk.cyan(LogAPI.chalk.italic(email))} - ${LogAPI.chalk.gray(`TOKEN HASH: ${tokenHash}`)}\nTo validate: http://192.168.15.5:5173/users/verify-acc?token=${token}`)
 
 				// Expires in 1 hour
 				await fastify.db.accVerifications.insertOne({ _id: new fastify.mongo.ObjectId(), userId: newUser.insertedId, tokenHash, createdAt: now, expiresAt: new Date(Date.now() + 1000 * 60 * 60) })

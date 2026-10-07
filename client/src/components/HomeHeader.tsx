@@ -5,12 +5,13 @@ import { immer } from 'zustand/middleware/immer'
 import { useShallow } from 'zustand/shallow'
 import { motion } from 'motion/react'
 import { CloseTabIcon, SearchIcon } from '../assets/icons'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useLocation, useNavigate } from '@tanstack/react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { rockshelfIcon } from '../assets/images'
 
 export interface HomeHeaderStateProps {
 	isMenuOpened: boolean
+	isSearchMenuOpened: boolean
 }
 
 export interface HomeHeaderStateActions {
@@ -36,6 +37,7 @@ export type HomeHeaderStateHook = HomeHeaderStateProps & HomeHeaderStateActions
 
 const defaultState: HomeHeaderStateProps = {
 	isMenuOpened: false,
+	isSearchMenuOpened: false,
 }
 
 export const useHomeHeaderState = create<HomeHeaderStateHook>()(
@@ -64,11 +66,14 @@ export const useHomeHeaderState = create<HomeHeaderStateHook>()(
 export function HomeHeader() {
 	const { avatarUrl, getMyUserDetails, removeToken } = useServerQuery()
 	const { t } = useTranslation()
-	const { isMenuOpened, setHomeHeaderState, resetHomeHeaderState } = useHomeHeaderState(useShallow((x) => x))
+	const { isMenuOpened, isSearchMenuOpened, setHomeHeaderState, resetHomeHeaderState } = useHomeHeaderState(useShallow((x) => x))
 	const queryClient = useQueryClient()
 	const navigate = useNavigate()
+	const location = useLocation()
+	console.log(location)
 	return (
 		<>
+			<motion.div initial={{ left: '100%' }} animate={isSearchMenuOpened ? { left: '0' } : { left: '100%' }} className="absolute z-2 h-screen w-full flex-row! bg-black/90 p-8 backdrop-blur-lg"></motion.div>
 			<motion.div initial={{ left: '100%' }} animate={isMenuOpened ? { left: '0' } : { left: '100%' }} className="absolute z-1 h-screen w-full flex-row! bg-black/90 p-8 backdrop-blur-lg">
 				<div className="mr-auto w-fit">
 					<div className="mb-4 flex-row! items-center">
@@ -81,7 +86,16 @@ export function HomeHeader() {
 							)}
 						</div>
 					</div>
-					<h3
+					<nav
+						className="cursor-pointer underline-offset-2 hover:underline"
+						onClick={() => {
+							navigate({ to: '/songs/register' })
+							resetHomeHeaderState()
+						}}
+					>
+						{t('upload_new_song')}
+					</nav>
+					<nav
 						className="cursor-pointer underline-offset-2 hover:underline"
 						onClick={() => {
 							navigate({ to: '/profile/settings' })
@@ -89,8 +103,8 @@ export function HomeHeader() {
 						}}
 					>
 						{t('profile_settings')}
-					</h3>
-					<h3
+					</nav>
+					<nav
 						className="cursor-pointer underline-offset-2 hover:underline"
 						onClick={() => {
 							removeToken()
@@ -100,13 +114,13 @@ export function HomeHeader() {
 						}}
 					>
 						{t('logout')}
-					</h3>
+					</nav>
 				</div>
 				<div className="w-fit">
 					<button className="mb-1 h-fit w-fit last:mb-0 hover:text-neutral-200" onClick={() => setHomeHeaderState((prev) => ({ isMenuOpened: !prev.isMenuOpened }))}>
 						<CloseTabIcon className="text-2xl" />
 					</button>
-					<button className="mb-1 h-fit w-fit last:mb-0 hover:text-neutral-200" onClick={() => setHomeHeaderState((prev) => ({ isMenuOpened: !prev.isMenuOpened }))}>
+					<button className="mb-1 h-fit w-fit last:mb-0 hover:text-neutral-200" onClick={() => setHomeHeaderState((prev) => ({ isSearchMenuOpened: !prev.isSearchMenuOpened }))}>
 						<SearchIcon className="text-2xl" />
 					</button>
 				</div>

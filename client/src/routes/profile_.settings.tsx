@@ -60,13 +60,13 @@ function RouteComponent() {
 		<>
 			<motion.div className="absolute z-50 h-screen w-full justify-center bg-black/96 px-8 backdrop-blur-lg" initial={{ display: 'none', opacity: 0 }} animate={isCountryModalOpened ? { display: 'flex', opacity: 1 } : { display: 'none', opacity: 0 }}>
 				<h1 className="mb-4 uppercase">{t('select_country')}</h1>
-				<div className="h-[90%] w-full overflow-y-auto">
+				<div className="h-[90%] w-full overflow-y-auto pr-2">
 					{countries.map((val) => {
 						return (
 							<button
 								type="button"
 								key={`country_code_${val.code}`}
-								className="itens-center mb-1 w-full flex-row! rounded-sm bg-transparent text-neutral-600 duration-100 last:mb-0 hover:bg-white/5 hover:text-neutral-400"
+								className={clsx('itens-center mb-1 w-full flex-row! rounded-sm text-start duration-100 last:mb-0 hover:text-neutral-400', val.code.toLowerCase() === country ? 'bg-neutral-400 hover:bg-neutral-200 text-neutral-800 hover:text-neutral-950' : 'bg-transparent text-neutral-600 hover:bg-white/5')}
 								onClick={(ev) => {
 									ev.preventDefault()
 									setProfileSettingsState({ country: val.code.toLowerCase() as CountryCodeWithUnselected, isCountryModalOpened: false, hasUserDetailsChange: true })

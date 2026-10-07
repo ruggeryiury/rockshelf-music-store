@@ -5,6 +5,7 @@ import { type ZodTypeProvider } from '@fastify/type-provider-zod'
 import { LogAPI } from './core/api/LogAPI'
 import { ServerInit } from './core/api/ServerInit'
 import { AdminRoute } from './routes/admin'
+import { SongRoute } from './routes/songs'
 import { StatusRoute } from './routes/status'
 import { UserRoute } from './routes/users'
 
@@ -20,6 +21,7 @@ await ServerInit.initSwaggerPlugins(app)
 await app.register(UserRoute)
 await app.register(StatusRoute)
 await app.register(AdminRoute)
+await app.register(SongRoute)
 
 try {
 	await app.ready()

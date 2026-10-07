@@ -33,7 +33,7 @@ export const userResendVerificationEmail = fp((fastify, _, done) => {
 			await fastify.db.accVerifications.deleteMany({ userId: user._id })
 
 			const { token, tokenHash } = await fastify.dbFuncs.verifications.genVerificationToken()
-			if (reply.server.env.LOG_TOKENS) LogAPI.log(`${LogAPI.chalk.bgGreen('TOKEN RE-EMITTED')} ${LogAPI.chalk.cyan(LogAPI.chalk.italic(email))} - ${LogAPI.chalk.gray(token)}\nTOKEN HASH: ${tokenHash}`)
+				if (reply.server.env.LOG_TOKENS) LogAPI.log(`${LogAPI.chalk.bgGreen('TOKEN EMITTED')} ${LogAPI.chalk.cyan(LogAPI.chalk.italic(email))} - ${LogAPI.chalk.gray(`TOKEN HASH: ${tokenHash}`)}\nTo validate: http://192.168.15.5:5173/users/verify-acc?token=${token}`)
 
 			// TO-DO: Implement e-mail send logic
 

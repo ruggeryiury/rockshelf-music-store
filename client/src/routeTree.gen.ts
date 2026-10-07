@@ -12,9 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as RegisterRouteImport } from './routes/register'
-import { Route as VerifyAccountRouteImport } from './routes/verify-account'
 import { Route as ProfileSettingsRouteImport } from './routes/profile_.settings'
 import { Route as SongsRegisterRouteImport } from './routes/songs_.register'
+import { Route as UsersVerifyAccRouteImport } from './routes/users_.verify-acc'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -31,11 +31,6 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VerifyAccountRoute = VerifyAccountRouteImport.update({
-  id: '/verify-account',
-  path: '/verify-account',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProfileSettingsRoute = ProfileSettingsRouteImport.update({
   id: '/profile_/settings',
   path: '/profile/settings',
@@ -46,31 +41,36 @@ const SongsRegisterRoute = SongsRegisterRouteImport.update({
   path: '/songs/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UsersVerifyAccRoute = UsersVerifyAccRouteImport.update({
+  id: '/users_/verify-acc',
+  path: '/users/verify-acc',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/home': typeof HomeRoute
   '/register': typeof RegisterRoute
-  '/verify-account': typeof VerifyAccountRoute
   '/profile/settings': typeof ProfileSettingsRoute
   '/songs/register': typeof SongsRegisterRoute
+  '/users/verify-acc': typeof UsersVerifyAccRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/home': typeof HomeRoute
   '/register': typeof RegisterRoute
-  '/verify-account': typeof VerifyAccountRoute
   '/profile/settings': typeof ProfileSettingsRoute
   '/songs/register': typeof SongsRegisterRoute
+  '/users/verify-acc': typeof UsersVerifyAccRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/home': typeof HomeRoute
   '/register': typeof RegisterRoute
-  '/verify-account': typeof VerifyAccountRoute
   '/profile_/settings': typeof ProfileSettingsRoute
   '/songs_/register': typeof SongsRegisterRoute
+  '/users_/verify-acc': typeof UsersVerifyAccRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -78,34 +78,34 @@ export interface FileRouteTypes {
     | '/'
     | '/home'
     | '/register'
-    | '/verify-account'
     | '/profile/settings'
     | '/songs/register'
+    | '/users/verify-acc'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/home'
     | '/register'
-    | '/verify-account'
     | '/profile/settings'
     | '/songs/register'
+    | '/users/verify-acc'
   id:
     | '__root__'
     | '/'
     | '/home'
     | '/register'
-    | '/verify-account'
     | '/profile_/settings'
     | '/songs_/register'
+    | '/users_/verify-acc'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HomeRoute: typeof HomeRoute
   RegisterRoute: typeof RegisterRoute
-  VerifyAccountRoute: typeof VerifyAccountRoute
   ProfileSettingsRoute: typeof ProfileSettingsRoute
   SongsRegisterRoute: typeof SongsRegisterRoute
+  UsersVerifyAccRoute: typeof UsersVerifyAccRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -131,13 +131,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/verify-account': {
-      id: '/verify-account'
-      path: '/verify-account'
-      fullPath: '/verify-account'
-      preLoaderRoute: typeof VerifyAccountRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/profile_/settings': {
       id: '/profile_/settings'
       path: '/profile/settings'
@@ -152,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SongsRegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/users_/verify-acc': {
+      id: '/users_/verify-acc'
+      path: '/users/verify-acc'
+      fullPath: '/users/verify-acc'
+      preLoaderRoute: typeof UsersVerifyAccRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -159,9 +159,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HomeRoute: HomeRoute,
   RegisterRoute: RegisterRoute,
-  VerifyAccountRoute: VerifyAccountRoute,
   ProfileSettingsRoute: ProfileSettingsRoute,
   SongsRegisterRoute: SongsRegisterRoute,
+  UsersVerifyAccRoute: UsersVerifyAccRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,7 +1,8 @@
 import z from 'zod'
 
-import { OBJECT_ID_REGEX, countryCodeSchemaWithUnselected } from './globals'
+import { OBJECT_ID_REGEX, countryCodeSchemaWithUnselected, rb3CompatibleDTAFileSchema } from './globals'
 
+// #region User Document
 export const dbSerializedUserDocumentSchema = z.object({
 	_id: z.string().regex(OBJECT_ID_REGEX),
 	username: z.string().min(3).max(32),
@@ -21,11 +22,30 @@ export type SerializedUserDocument = z.infer<typeof dbSerializedUserDocumentSche
 export const dbSerializedSharedUserDocumentSchema = dbSerializedUserDocumentSchema.omit({ passwordHash: true, active: true })
 export type SerializedSharedUserDocument = z.infer<typeof dbSerializedSharedUserDocumentSchema>
 
+// #region Verification Document
 export const dbSerializedVerificationTypeDocumentSchema = z.object({
 	_id: z.string().regex(OBJECT_ID_REGEX),
 	userId: z.string().regex(OBJECT_ID_REGEX),
-	tokenHash: z.hash('sha256'),
+	tokenHash: z.base64url(),
 	createdAt: z.iso.datetime(),
 	expiresAt: z.iso.datetime(),
 })
 export type SerializedVerificationDocument = z.infer<typeof dbSerializedVerificationTypeDocumentSchema>
+
+// #region Song Document
+export const dbSerializedSongDocumentSchema = z.object({
+	_id: z.string().regex(OBJECT_ID_REGEX),
+	userId: z.string().regex(OBJECT_ID_REGEX),
+	artistId: z.string().regex(OBJECT_ID_REGEX),
+	albumId: z.string().regex(OBJECT_ID_REGEX),
+	fileSize: z.number(),
+	fileHash: z.base64(),
+	uploadedAt: z.iso.datetime(),
+	updatedAt: z.iso.datetime(),
+	status: z.union([z.literal('processing'), z.literal('available')]),
+	views: z.int().nonnegative(),
+	downloads: z.int().nonnegative(),
+	description: z.string(),
+	songData: rb3CompatibleDTAFileSchema,
+})
+export type SerializedSongDocument = z.infer<typeof dbSerializedSongDocumentSchema>

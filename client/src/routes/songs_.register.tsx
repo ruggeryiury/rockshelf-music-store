@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSongRegisterState } from '../store/pages/songsRegister'
 import { useShallow } from 'zustand/shallow'
+import { HomeHeader } from '../components'
 
 export const Route = createFileRoute('/songs_/register')({
 	component: RouteComponent,
@@ -29,6 +30,7 @@ function RouteComponent() {
 	else if (!verifyToken.data || verifyToken.data?.statusCode !== 200) return <TokenExpiredComponent />
 	return (
 		<section>
+			<HomeHeader/>
 			<h2>File</h2>
 			<input
 				type="file"

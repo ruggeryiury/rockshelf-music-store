@@ -52,8 +52,14 @@ export class LogAPI {
 			LogAPI.log()
 
 			const usersCount = await app.db.users.countDocuments()
+			const songCount = await app.db.songs.countDocuments()
+			const artistsCount = await app.db.artists.countDocuments()
+			const albumsCount = await app.db.albums.countDocuments()
 			LogAPI.log(LogAPI.chalk.blue('Server status:'))
 			LogAPI.logObject({ 'Users Count': usersCount })
+			LogAPI.logObject({ 'Songs Count': songCount })
+			LogAPI.logObject({ 'Artists Count': artistsCount })
+			LogAPI.logObject({ 'Albums Count': albumsCount })
 			LogAPI.log()
 		}
 	}

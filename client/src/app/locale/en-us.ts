@@ -17,7 +17,7 @@ export const localeENUS = {
 	profile_settings: 'Profile Settings',
 	email_change_text: "Once you changed the account's e-mail, an verification e-mail will be sent to the new e-mail for verification.",
 	register_success_title: 'Account registered!',
-	register_success_desc: 'Thanks for registering to Rockshelf Music Store! Now you can log in, upload your Rock Band 3 customs and share with your friends and community!',
+	register_success_desc: 'Thanks for registering to Rockshelf Music Store! Now you can log in, upload your Rock Band 3 customs and share with your friends and community!<br /><br />Be sure to check your e-mail and verify your account to be able to upload songs!',
 	goto_login: 'Go to Login Page',
 	email_not_verified_text: 'Your account is not verified',
 	goto_home: 'Go to Homepage',
@@ -34,6 +34,7 @@ export const localeENUS = {
 	banned_user_desc: "You've been banned from the server. <a>Click here</a> to go back to the Login page",
 	remove_avatar: 'Remove Avatar Image',
 	select_country: 'Select Your Country',
+	upload_new_song: 'Upload New Song',
 
 	error_email_invalid_format: 'Provided e-mail has an invalid e-mail format.',
 	error_password_too_small: 'Provided password has less than 8 characters.',

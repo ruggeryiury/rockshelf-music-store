@@ -1,6 +1,6 @@
 import { BinaryReader, type FilePathLikeTypes, pathLikeToFilePath } from 'node-lib'
 
-import { dateISOFormatObjectToDateISOString } from './utils'
+import { dateISOFormatObjectToDateISOString } from '../utils'
 
 export const rsPackImage = {
 	fileVersion: {
