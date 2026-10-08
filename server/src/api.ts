@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import type { GenericServerResponse, GetMyStatusSuccess, GetSongDataQuerystring, GetSongDataSuccess, GetSongDetailsSuccess, GetUserDetailsSuccessSerialized, ImageProcessingParams, UserLoginBody, UserLoginSuccess, UserRegisterBody, UserResendVerificationEmailBody, UserResetPasswordBody, UserUpdateBody, UserVerifyAccBody } from './schemas'
+import type { GenericServerResponse, GetMyStatusSuccess, GetSongDataQuerystring, GetSongDataSuccess, GetSongDetailsSuccess, GetSongFileHeaderSuccess, GetUserDetailsSuccessSerialized, ImageProcessingParams, UserLoginBody, UserLoginSuccess, UserRegisterBody, UserResendVerificationEmailBody, UserResetPasswordBody, UserUpdateBody, UserVerifyAccBody } from './schemas'
 
 const dev = axios.create({ baseURL: 'http://192.168.15.5:3000/api/v1', validateStatus: (status) => status < 500 })
 
@@ -33,6 +33,7 @@ export const serverAPI = {
 		getSongData: (songId: string, queryParams?: Partial<GetSongDataQuerystring>) => dev.get<GetSongDataSuccess>(`songs/${songId}/data`, { params: queryParams }),
 		getSongDetails: (songId: string) => dev.get<GetSongDetailsSuccess>(`songs/${songId}/details`),
 		getSongThumbnail: (songId: string, queryParams?: Partial<ImageProcessingParams>) => dev.get<Blob>(`songs/${songId}/thumbnail`, { params: queryParams }),
+		getSongFileHeader: (songId: string) => dev.get<GetSongFileHeaderSuccess>(`songs/${songId}/header`),
 		register: (body: FormData, token: string) => dev.post<GenericServerResponse>('songs/register', body, { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` } }),
 	},
 } as const

@@ -4,9 +4,9 @@ import { interpolateStr } from '@utils/string'
 
 import { type ReplyCodeNames, codeMap, httpCodes } from '../../constants'
 import { LogAPI } from '../api/LogAPI'
-import type { ServerErrorOptions } from './errors'
+import type { ServerErrorCodeType, ServerErrorOptions } from './errors'
 
-export function success(req: FastifyRequest, reply: FastifyReply, options: ServerErrorOptions) {
+export function success(req: FastifyRequest, reply: FastifyReply, options: ServerErrorCodeType | ServerErrorOptions) {
 	if (typeof options === 'string') {
 		const message = options in codeMap ? codeMap[options as ReplyCodeNames][1] : codeMap.SERVER_ERROR_UNKNOWN[1]
 		const statusCode = options in codeMap ? codeMap[options as ReplyCodeNames][0] : codeMap.SERVER_ERROR_UNKNOWN[0]

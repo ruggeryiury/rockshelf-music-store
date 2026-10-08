@@ -76,6 +76,7 @@ export class ServerInit {
 		await app.register(staticPlugin, {
 			root: DirPath.of(process.cwd(), 'public').path,
 			prefix: '/public',
+			serve: false,
 		})
 		await app.register(corsPlugin, {
 			// TO-DO: Change this to the real website
@@ -120,7 +121,8 @@ export class ServerInit {
 						{ name: 'User (Data)', description: 'Endpoints to fetch data and content from an user (requires user ID)' },
 						{ name: 'User (Methods)', description: 'Endpoints to manipulate an user entry (requires user authorization token)' },
 						{ name: 'User Verification/Reset Password', description: 'Endpoints to verify users, re-send user verification e-mails and reset passwords' },
-						{ name: 'Song Entry', description: 'Endpoints related to song entries' },
+						{ name: 'Song (Data)', description: 'Endpoints to fetch data and content from a song (requires song ID)' },
+						{ name: 'Song (Methods)', description: 'Endpoints to manipulate a song entry (requires user authorization token)' },
 						{ name: 'Admin', description: 'Endpoints that required administrator privileges' },
 					],
 					components: {

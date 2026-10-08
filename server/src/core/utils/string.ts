@@ -72,3 +72,38 @@ export const interpolateStr = (text: string, values?: Record<string, string | nu
 
 	return text
 }
+
+/**
+ * Escapes regular expression special characters in a string.
+ *
+ * This prevents characters provided by the user from being interpreted
+ * as regular expression syntax when the resulting string is used to
+ * construct a `RegExp`.
+ *
+ * @param {string} value The string to escape.
+ * @returns {string} The escaped string, safe to use as a literal pattern in a regular expression.
+ */
+export const escapeRegex = (value: string): string => {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * Normalizes a string for case-insensitive and diacritic-insensitive searching.
+ *
+ * The string is decomposed using Unicode NFD normalization, diacritic
+ * characters are removed, and the result is converted to lowercase.
+ *
+ * @param {string} value The string to normalize.
+ * @returns {string} The normalized string without diacritics and in lowercase.
+ *
+ * @example
+ * normalizeSearch('João') // 'joao'
+ * normalizeSearch('Beyoncé') // 'beyonce'
+ * normalizeSearch('Café') // 'cafe'
+ */
+export const normalizeStr = (value: string): string => {
+	return value
+		.normalize('NFD')
+		.replace(/\p{Diacritic}/gu, '')
+		.toLowerCase()
+}

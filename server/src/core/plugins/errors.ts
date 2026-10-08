@@ -51,7 +51,7 @@ export class ServerError extends Error {
 	 */
 	data?: Record<string, unknown>
 	error: undefined
-	constructor(options: string | ServerErrorOptions) {
+	constructor(options: ServerErrorCodeType | ServerErrorOptions) {
 		if (typeof options === 'string') {
 			super(options in codeMap ? codeMap[options as ReplyCodeNames][1] : codeMap.SERVER_ERROR_UNKNOWN[1])
 			this.error = undefined

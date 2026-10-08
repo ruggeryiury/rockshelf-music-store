@@ -18,15 +18,16 @@ export const songRegister = fp((fastify, _, done) => {
 		{
 			schema: {
 				summary: 'Register a song to the database by uploading its RB3 file',
-				tags: ['Song Entry'],
+				tags: ['Song (Methods)'],
 				consumes: ['multipart/form-data'],
 				body: songRegisterBodySchema.nullable(),
 				response: {
 					201: SwaggerAPI.replySchema('SUCCESS_SONG_REGISTER').describe('Song has been registered successfully'),
-					400: SwaggerAPI.replySchema('SONG_REGISTER_INVALID_RB3_FILE').describe('Invalid RB3 file, RB3 file with multiple songs'),
+					400: SwaggerAPI.replySchema('INVALID_RB3_FILE').describe('Invalid RB3 file, RB3 file with multiple songs, song files are encrypted'),
 					401: SwaggerAPI.replySchema('AUTH_TOKEN_ERROR').describe('Token error (No token on request headers, expired token, invalid token signature)'),
 					403: SwaggerAPI.replySchema('FORBIDDEN_BANNED_USER').describe('User banned from the server'),
 					409: SwaggerAPI.replySchema('DUPLICATED_SONG_ID').describe('Duplicated song ID from the provided song'),
+					413: SwaggerAPI.replySchema('SONG_FILE_TOO_LARGE').describe('Song file is too large'),
 				},
 				security: [
 					{
@@ -53,6 +54,11 @@ export const songRegister = fp((fastify, _, done) => {
 			for await (const part of parts) {
 				if (part.type === 'file') {
 					await pipeline(part.file, await songFilePath.createWriteStream())
+
+					if (part.file.truncated) {
+						if (songFilePath.exists) await songFilePath.delete()
+						throw new ServerError('SONG_FILE_TOO_LARGE')
+					}
 				}
 			}
 
@@ -62,18 +68,23 @@ export const songRegister = fp((fastify, _, done) => {
 				await rb3.checkFileIntegrity()
 			} catch {
 				if (rb3.path.exists) await rb3.path.delete()
-				throw new ServerError({ code: 'SONG_REGISTER_INVALID_RB3_FILE' })
+				throw new ServerError({ code: 'INVALID_RB3_FILE' })
 			}
 
 			const stat = await rb3.stat()
 			if (stat.dta.songs.length === 0) {
 				if (rb3.path.exists) await rb3.path.delete()
-				throw new ServerError({ code: 'SONG_REGISTER_INVALID_RB3_FILE' })
+				throw new ServerError({ code: 'INVALID_RB3_FILE' })
 			}
 
 			if (stat.isSongPackage) {
 				if (rb3.path.exists) await rb3.path.delete()
-				throw new ServerError({ code: 'SONG_REGISTER_RB3_PACK_NOT_SUPPORTED' })
+				throw new ServerError({ code: 'RB3_PACK_NOT_SUPPORTED' })
+			}
+
+			if (stat.header.encryptionStatus !== 'decrypted') {
+				if (rb3.path.exists) await rb3.path.delete()
+				throw new ServerError('RB3_SONG_FILES_ENCRYPTED')
 			}
 
 			const now = new Date()

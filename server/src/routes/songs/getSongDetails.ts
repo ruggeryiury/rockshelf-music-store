@@ -13,7 +13,7 @@ export const getSongDetails = fp((fastify, _, done) => {
 		{
 			schema: {
 				summary: 'Retrieves information about a song',
-				tags: ['Song Entry'],
+				tags: ['Song (Data)'],
 				response: {
 					200: SwaggerAPI.replySchema('OK', getSongDetailsSuccessSchema.shape.data.nonoptional()).describe('Song data received'),
 					404: SwaggerAPI.replySchema('SONG_ID_NOT_FOUND').describe('No registered song found with provided ID'),

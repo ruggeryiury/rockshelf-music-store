@@ -1,6 +1,6 @@
 import z from 'zod'
 
-import { booleanValueAsStringSchema, genericServerResponse, rb3CompatibleDTAFileSchema } from '@schemas'
+import { booleanValueAsStringSchema, genericServerResponse, rb3CompatibleDTAFileSchema, rb3FileHeaderSchema } from '@schemas'
 
 import { dbSharedUserDocumentSchema, dbSongDocumentSchema } from '../db'
 
@@ -29,3 +29,8 @@ export const getSongDetailsSuccessSchema = genericServerResponse.extend({
 		.optional(),
 })
 export type GetSongDetailsSuccess = z.infer<typeof getSongDetailsSuccessSchema>
+
+export const getSongFileHeaderSuccessSchema = genericServerResponse.extend({
+	data: rb3FileHeaderSchema.optional(),
+})
+export type GetSongFileHeaderSuccess = z.infer<typeof getSongFileHeaderSuccessSchema>

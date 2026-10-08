@@ -28,8 +28,8 @@ export const dbVerificationDocumentSchema = z.object({
 	_id: z.instanceof(ObjectId).describe('The entry object ID'),
 	userId: z.instanceof(ObjectId).describe('The user ID'),
 	tokenHash: z.base64url().describe('A computed hash of the verification token sent for the user by e-mail'),
-	createdAt: z.date().describe('The creation date of the verification token.'),
-	expiresAt: z.date().describe('The date where the verification token will expire.'),
+	createdAt: z.date().describe('The creation date of the verification token'),
+	expiresAt: z.date().describe('The date where the verification token will expire'),
 })
 export type VerificationDocument = z.infer<typeof dbVerificationDocumentSchema>
 
@@ -39,15 +39,15 @@ export const dbSongDocumentSchema = z.object({
 	userId: z.instanceof(ObjectId).describe('The user ID'),
 	artistId: z.instanceof(ObjectId).describe('The hash of the artist/band of the song'),
 	albumId: z.instanceof(ObjectId).optional().describe('The hash of the album of the song'),
-	fileSize: z.number(),
-	fileHash: z.base64(),
-	uploadedAt: z.date(),
-	updatedAt: z.date(),
-	status: z.union([z.literal('processing'), z.literal('available')]),
-	views: z.int().nonnegative(),
-	downloads: z.int().nonnegative(),
-	description: z.string(),
-	songData: rb3CompatibleDTAFileSchema,
+	fileSize: z.number().describe('The size of the RB3 file'),
+	fileHash: z.base64().describe('The computed hash of the song file contents'),
+	uploadedAt: z.date().describe('The upload date of the song'),
+	updatedAt: z.date().describe('The update date of the song'),
+	status: z.union([z.literal('processing'), z.literal('available')]).describe('A flag to describe if the song file is busy on server request operations'),
+	views: z.int().nonnegative().describe('The amount of views of the song file'),
+	downloads: z.int().nonnegative().describe('The amount of downloads of the song'),
+	description: z.string().describe('A Markdown-compatible description of the song'),
+	songData: rb3CompatibleDTAFileSchema.describe('The parsed song data'),
 })
 export type SongDocument = z.infer<typeof dbSongDocumentSchema>
 

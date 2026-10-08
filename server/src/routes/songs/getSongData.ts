@@ -13,7 +13,7 @@ export const getSongData = fp((fastify, _, done) => {
 		{
 			schema: {
 				summary: 'Retrieves a parsed DTA file as JSON from a song',
-				tags: ['Song Entry'],
+				tags: ['Song (Data)'],
 				response: {
 					200: SwaggerAPI.replySchema('OK', getSongDataSuccessSchema.shape.data.nonoptional()).describe('Song data received'),
 					404: SwaggerAPI.replySchema('SONG_ID_NOT_FOUND').describe('No registered song found with provided ID'),

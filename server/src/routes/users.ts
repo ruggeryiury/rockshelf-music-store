@@ -2,7 +2,6 @@ import fp from 'fastify-plugin'
 
 import { deleteMyAvatar } from './users/deleteMyAvatar'
 import { getMyAvatar } from './users/getMyAvatar'
-import { getMyStatus } from './users/getMyStatus'
 import { getMyUserDetails } from './users/getMyUserDetails'
 import { getUserAvatar } from './users/getUserAvatar'
 import { getUserDetails } from './users/getUserDetails'
@@ -23,7 +22,6 @@ export const UserRoute = fp((fastify, _, done) => {
 	fastify.register(getUserDetails)
 	fastify.register(getUserAvatar)
 
-	fastify.register(getMyStatus)
 	fastify.register(userVerifyToken)
 	fastify.register(getMyUserDetails)
 	fastify.register(updateMyUser)

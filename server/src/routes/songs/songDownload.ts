@@ -12,7 +12,7 @@ export const songDownload = fp((fastify, _, done) => {
 		{
 			schema: {
 				summary: 'Downloads a song RB3 file',
-				tags: ['Song Entry'],
+				tags: ['Song (Data)'],
 				response: {
 					200: SwaggerAPI.replySchemaWithFile('application/octec-stream').describe('Song RB3 file retrieved successfully'),
 					404: SwaggerAPI.replySchema('SONG_ID_NOT_FOUND').describe('No registered song found with provided ID'),
@@ -25,7 +25,7 @@ export const songDownload = fp((fastify, _, done) => {
 			const song = await fastify.dbFuncs.songs.findById(songId)
 			if (!song) throw new ServerError({ code: 'SONG_ID_NOT_FOUND' })
 
-			if (song.status !== 'available') throw new ServerError({ code: 'BUSY_SONG_FILE' })
+			if (song.status !== 'available') throw new ServerError({ code: 'UNAVAILABLE_SONG_FILE' })
 
 			await fastify.db.songs.updateOne({ _id: new fastify.mongo.ObjectId(songId) }, { $inc: { downloads: 1 } })
 

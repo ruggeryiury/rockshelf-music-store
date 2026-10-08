@@ -13,7 +13,7 @@ export const getSongThumbnail = fp((fastify, _, done) => {
 		{
 			schema: {
 				summary: 'Retrieves a song thumbnail',
-				tags: ['Song Entry'],
+				tags: ['Song (Data)'],
 				response: {
 					200: SwaggerAPI.replySchemaWithFile('image/*').describe('User avatar retrieved successfully'),
 					404: SwaggerAPI.replySchema('SONG_ID_NOT_FOUND').describe('No registered song found with provided ID'),
@@ -25,6 +25,7 @@ export const getSongThumbnail = fp((fastify, _, done) => {
 		async (req, reply) => {
 			const { songId } = req.params
 			const { format, size, quality } = req.query
+			console.log(req.query)
 			const mime = format ? (format === 'jpg' ? 'jpeg' : format) : 'webp'
 
 			const song = await fastify.db.songs.findOne({ _id: new fastify.mongo.ObjectId(songId) })

@@ -1,4 +1,4 @@
-import { ZodNonOptional, z } from 'zod'
+import { type ZodNonOptional, z } from 'zod'
 
 import { genericServerResponse } from '@schemas'
 

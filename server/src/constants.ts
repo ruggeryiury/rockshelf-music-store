@@ -385,8 +385,8 @@ export const codeMap = {
 	ROUTE_NOT_FOUND: [404, 'Route: {{url}} ({{method}}) not found'],
 	SERVER_ERROR_UNKNOWN: [500, 'An unknown error occurred'],
 	SONG_ID_NOT_FOUND: [404, 'No registered song found using the provided ID'],
-	SONG_REGISTER_INVALID_RB3_FILE: [400, 'The provided RB3 file is invalid'],
-	SONG_REGISTER_RB3_PACK_NOT_SUPPORTED: [400, 'Provided RB3 file is a song package, only single song RB3 files are supported'],
+	INVALID_RB3_FILE: [400, 'The provided RB3 file is invalid or corrupted'],
+	RB3_PACK_NOT_SUPPORTED: [400, 'Provided RB3 file is a song package, only single song RB3 files are supported'],
 	SUCCESS_AVATAR_UPLOAD: [200, 'Provided avatar uploaded'],
 	SUCCESS_GET_MYUSER_DETAILS: [200, 'Userdata retrieved'],
 	SUCCESS_GET_USER_DETAILS: [200, 'Userdata retrieved'],
@@ -406,6 +406,8 @@ export const codeMap = {
 	USER_PASSWORD_NO_UPPERCASE: [401, 'Provided user password has no uppercase letters'],
 	USER_PASSWORD_TOO_BIG: [401, 'Provided user password is too big'],
 	USER_PASSWORD_TOO_SMALL: [401, 'Provided user password is too small'],
+	SONG_FILE_TOO_LARGE: [413, 'Provided song file is too large'],
+	RB3_SONG_FILES_ENCRYPTED: [400, "The song files can't be encrypted"],
 
 	// Generic codes
 	OK: [200, 'OK'],
