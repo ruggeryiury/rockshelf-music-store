@@ -25,7 +25,7 @@ export const getSongDetails = fp((fastify, _, done) => {
 			const { songId } = req.params
 			const songObjectId = new fastify.mongo.ObjectId(songId)
 
-			const song = await fastify.db.songs.aggregate<SongDocument & { user: UserDocument }>().match({ _id: songObjectId }).lookup({ from: 'users', localField: 'userId', foreignField: '_id', as: 'user' }).unwind('$user').next()
+			const song = await fastify.db.songs.aggregate<SongDocument & { user: UserDocument }>().match({ _id: songObjectId }).lookup({ from: 'users', localField: 'charterId', foreignField: '_id', as: 'user' }).unwind('$user').next()
 			if (!song) throw new ServerError({ code: 'SONG_ID_NOT_FOUND' })
 
 			await fastify.db.songs.updateOne({ _id: songObjectId }, { $inc: { views: 1 } })

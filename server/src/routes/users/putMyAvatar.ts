@@ -64,9 +64,9 @@ export const putMyAvatar = fp((fastify, _, done) => {
 			const outputPath = ServerFileSystem.publicDir().gotoFile(`users/${req.userDocument._id.toHexString()}/avatar.webp`)
 			const outputRoot = DirPath.of(outputPath.root)
 			if (!outputRoot.exists) await outputRoot.mkDir(true)
-			const tempPath = ServerFileSystem.publicDir().gotoFile(`users/${req.userDocument._id.toHexString()}/avatar-${crypto.randomUUID()}.tmp.webp`)
+			const tempPath = ServerFileSystem.tempFile({ extension: 'webp' })
 
-			await img.resize(256, 256, { withoutEnlargement: true, fit: 'contain', background: '#00000000' }).webp({ quality: 100 }).toFile(tempPath.path)
+			await img.resize(256, 256, { withoutEnlargement: true, fit: 'contain', background: '#00000000' }).webp({ lossless: true, quality: 100 }).toFile(tempPath.path)
 
 			if (outputPath.exists) await outputPath.delete()
 			await tempPath.copy(outputPath)

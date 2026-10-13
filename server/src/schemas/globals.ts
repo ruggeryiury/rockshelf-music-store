@@ -76,6 +76,17 @@ export type UserIdParams = z.infer<typeof userIdParams>
 export const songIdParams = z.object({ songId: z.string().regex(OBJECT_ID_REGEX).describe('The song ID') })
 export type SongIdParams = z.infer<typeof songIdParams>
 
+export const albumIdParams = z.object({ albumId: z.string().regex(OBJECT_ID_REGEX).describe('The album ID') })
+export type AlbumIdParams = z.infer<typeof albumIdParams>
+
+export type DDSFormatTypes = 'DXT1' | 'DXT3' | 'DXT5' | 'NORMAL' | 'UNKNOWN'
+export type MainArtworkSizeTypes = 128 | 256 | 512 | 1024 | 2048
+export type SmallArtworkSizeTypes = 8 | 16 | 32 | 64
+export type ArtworkSizeTypes = SmallArtworkSizeTypes | MainArtworkSizeTypes
+export type ImageFormatTypes = 'png' | 'bmp' | 'jpg' | 'webp' | 'tga'
+
+export type SharpExportFormatTypes = Exclude<ImageFormatTypes, 'bmp' | 'tga'> | 'jpeg' | 'gif' | 'avif' | 'tiff'
+
 export const imageProcessingParamsSchema = z.object({
 	v: z
 		.string()
@@ -83,19 +94,19 @@ export const imageProcessingParamsSchema = z.object({
 		.pipe(z.int().nonnegative())
 		.default(0)
 		.describe('Avatar versioning (abstract value for URL caching)'),
-	format: z.enum(['jpg', 'jpeg', 'gif', 'png', 'webp']).optional().describe('The output format of the avatar image'),
+	format: z.enum(['png', 'jpg', 'webp', 'jpeg', 'gif', 'avif', 'tiff']).optional().describe("The output format of the avatar image. Default is 'webp'."),
 	size: z
 		.string()
 		.transform((val) => parseInt(val))
 		.pipe(z.int().positive().max(256))
 		.default(256)
-		.describe('The output image size. Max is 256'),
+		.describe('The output image size. Max is 256. Default is 256.'),
 	quality: z
 		.string()
 		.transform((val) => parseInt(val))
 		.pipe(z.number().positive().max(100))
 		.default(85)
-		.describe('The output quality of the image (only used with lossy image formats)'),
+		.describe('The output quality of the image (only used with lossy image formats). Default is 85.'),
 })
 export type ImageProcessingParams = z.infer<typeof imageProcessingParamsSchema>
 
@@ -369,12 +380,12 @@ export const rb3CompatibleDTAFileSchema = z.object({
 	pans: z.number().min(-1).max(1).array(),
 	vols: z.number().min(-96).max(0).array(),
 	cores: z.number().min(-1).max(1).array(),
-	vocal_parts: z.int().min(0).max(3),
+	vocal_parts: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
 	mute_volume: z.number().min(-96).max(0).optional(),
 	mute_volume_vocals: z.number().min(-96).max(0).optional(),
 	hopo_threshold: z.number().optional(),
-	bank: z.string(),
-	drum_bank: z.string(),
+	bank: z.union([z.literal('sfx/tambourine_bank.milo'), z.literal('sfx/cowbell_bank.milo'), z.literal('sfx/handclap_bank.milo'), z.literal('sfx/cowbell3_bank.milo')]),
+	drum_bank: z.union([z.literal('sfx/kit01_bank.milo'), z.literal('sfx/kit02_bank.milo'), z.literal('sfx/kit03_bank.milo'), z.literal('sfx/kit04_bank.milo'), z.literal('sfx/kit05_bank.milo')]),
 	anim_tempo: z.number(),
 	band_fail_cue: z.string().optional(),
 	song_scroll_speed: z.number().optional(),
@@ -453,6 +464,7 @@ export const rb3FileHeaderSchema = z.object({
 		descriptionLength: z.int().nonnegative(),
 		thumbnailLength: z.int().nonnegative(),
 		packageCreatorThumbnailLength: z.int().nonnegative(),
+		packageCategory: z.union([z.literal('other'), z.literal('author'), z.literal('artistBand'), z.literal('fullBand'), z.literal('singles'), z.literal('rockBand'), z.literal('guitarHero'), z.literal('official'), z.literal('unofficial'), z.literal('themed'), z.literal('seasonal'), z.literal('debug')]),
 		creationYear: z.int().nonnegative(),
 		creationMonth: z.int().nonnegative(),
 		creationDay: z.int().nonnegative(),
@@ -463,8 +475,10 @@ export const rb3FileHeaderSchema = z.object({
 		packageSize: z.int().nonnegative(),
 		songDataOffset: z.int().nonnegative(),
 		filesFormat: z.string(),
-		packageCategory: z.string(),
 		packageHash: z.hash('sha256'),
+		charterId: z.string().regex(OBJECT_ID_REGEX).nullable(),
+		songId: z.string().regex(OBJECT_ID_REGEX).nullable(),
+		songVersion: z.int().nonnegative(),
 		songEntries: z.array(
 			z.object({
 				songname: z.string().max(43),

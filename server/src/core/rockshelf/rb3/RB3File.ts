@@ -1,8 +1,15 @@
-import { BinaryReader, FilePath, type FilePathJSONRepresentation, type FilePathLikeTypes, pathLikeToFilePath } from 'node-lib'
+import { BinaryReader, type FilePath, type FilePathJSONRepresentation, type FilePathLikeTypes, pathLikeToFilePath } from 'node-lib'
+import { pipeline } from 'node:stream/promises'
 
 import { DTAParser } from '../dta/DTAParser'
 import type { RB3CompatibleDTAFile } from '../dta/dtaStruct'
-import { type RB3FileHeaderObject, RB3_HEADER_SIZE, RB3_SONG_ENTRY_SIZE, parseRB3FileHeader } from './parseRB3File'
+import { type RB3FileHeaderObject, parseRB3FileHeader } from './parseRB3File'
+
+export const RB3_HEADER_SIZE = 0x200
+export const RB3_HEADER_PADDING = 0x19c
+export const RB3_SONG_ENTRY_SIZE = 0x60
+export const RB3_SONG_ENTRY_PADDING = 0x0c
+export const RB3_SONGNAME_MAX_LENGTH = 0x2a
 
 export interface RB3FileStatObject {
 	/**
@@ -45,6 +52,10 @@ export interface RB3FileStatObject {
 	 * Tells if the song package contains more than one song.
 	 */
 	isSongPackage: boolean
+	/**
+	 * An array of strings with relative paths for the extractable files of the song package.
+	 */
+	files: string[]
 }
 
 export interface RB3FileJSONRepresentation extends Omit<RB3FileStatObject, 'dta' | 'description' | 'thumbnail' | 'packageCreatorThumbnail'> {
@@ -69,6 +80,8 @@ export interface RB3FileJSONRepresentation extends Omit<RB3FileStatObject, 'dta'
 	 */
 	dta: RB3CompatibleDTAFile[]
 }
+
+export type RB3FileGetterTypes = 'songs.dta' | 'folder.jpg' | 'creator.jpg' | 'package.md' | `${string}.mogg` | `${string}.mid` | `${string}_keep.png_ps3` | `${string}.milo_ps3`
 
 /**
  * A class that represents a Rock Band 3 Song Package file (`.rb3`).
@@ -102,10 +115,16 @@ export class RB3File {
 	 */
 	async checkFileIntegrity(): Promise<string> {
 		if (!this.path.exists) throw new Error(`Provided RB3 Song Package file "${this.path.path}" does not exists.`)
-		const magic = (await this.path.readOffset(0, 3)).toString()
+		const reader = await BinaryReader.fromFile(this.path)
+		const magic = await reader.readASCII(0x03)
+		reader.seek(0x05)
+		const songsCount = await reader.readUInt8()
 
-		if (magic === 'RB3') return magic
-		throw new Error(`Provided RB3 Song Package file "${this.path.path}" is not a valid RB3 Song Package file.`)
+		if (magic !== 'RB3' || reader.length < RB3_HEADER_SIZE + 0x60 * songsCount) throw new Error(`Provided RB3 Song Package file "${this.path.path}" is not a valid RB3 Song Package file.`)
+
+		await reader.close()
+
+		return magic
 	}
 
 	/**
@@ -140,11 +159,25 @@ export class RB3File {
 
 		const fileSize = reader.length
 
+		const files: string[] = []
+
+		if (header.dtaFileLength) files.push('songs.dta')
+		if (header.thumbnailLength) files.push('folder.jpg')
+		if (header.packageCreatorThumbnailLength) files.push('creator.jpg')
+
+		for (const song of header.songEntries) {
+			const { artworkSize, midiSize, miloSize, moggSize, songname } = song
+			if (moggSize) files.push(`${songname}/${songname}.mogg`)
+			if (midiSize) files.push(`${songname}/${songname}.mid`)
+			if (artworkSize) files.push(`${songname}/gen/${songname}_keep.png_ps3`)
+			if (miloSize) files.push(`${songname}/gen/${songname}.milo_ps3`)
+		}
+
 		await reader.close()
 
 		const isSongPackage = dta.songs.length > 1
 
-		return { header, packageName, fileSize, defaultFolderName, packageCreatorName, description, thumbnail, packageCreatorThumbnail, dta, isSongPackage }
+		return { header, packageName, fileSize, defaultFolderName, packageCreatorName, description, thumbnail, packageCreatorThumbnail, dta, isSongPackage, files }
 	}
 
 	/**
@@ -163,6 +196,236 @@ export class RB3File {
 			thumbnail: `data:image/jpeg;base64,${stat.thumbnail.toString('base64')}`,
 			packageCreatorThumbnail: stat.header.packageCreatorThumbnailLength > 0 && stat.packageCreatorThumbnail ? `data:image/jpeg;base64,${stat.packageCreatorThumbnail.toString('base64')}` : undefined,
 			dta: stat.dta.songs,
+		}
+	}
+
+	/**
+	 * Searches for a file in the song package file and returns a `Buffer` with the file contents. Returns `undefined` if the file doesn't exists on the song package file system.
+	 * - - - -
+	 * @param {T} fileName The name of the file.
+	 * @returns {Promise<Buffer | undefined>}
+	 */
+	async readFileBuffer<T extends RB3FileGetterTypes>(fileName: T): Promise<Buffer | undefined> {
+		let value: Buffer | undefined
+		const stat = await this.stat()
+		const reader = await this.path.openReader()
+
+		const { songDataOffset, songEntries, dtaFileLength, thumbnailLength, packageCreatorThumbnailLength, packageNameLength, packageFolderNameLength, packageCreatorNameLength, descriptionLength } = stat.header
+		const entriesCount = songEntries.length
+		if (fileName === 'songs.dta' && dtaFileLength) {
+			reader.seek(0x200 + entriesCount * 0x60 + packageNameLength + packageFolderNameLength + packageCreatorNameLength, 'start')
+			value = await reader.read(dtaFileLength)
+		} else if (fileName === 'folder.jpg' && thumbnailLength) {
+			reader.seek(0x200 + entriesCount * 0x60 + packageNameLength + packageFolderNameLength + packageCreatorNameLength + dtaFileLength + descriptionLength, 'start')
+			value = await reader.read(thumbnailLength)
+		} else if (fileName === 'creator.jpg' && packageCreatorThumbnailLength) {
+			reader.seek(0x200 + entriesCount * 0x60 + packageNameLength + packageFolderNameLength + packageCreatorNameLength + dtaFileLength + descriptionLength + thumbnailLength, 'start')
+			value = await reader.read(packageCreatorThumbnailLength)
+		} else if (fileName === 'package.md' && descriptionLength) {
+			reader.seek(0x200 + entriesCount * 0x60 + packageNameLength + packageFolderNameLength + packageCreatorNameLength + dtaFileLength)
+			value = await reader.read(descriptionLength)
+		} else {
+			if (fileName.endsWith('.mogg')) {
+				const songname = fileName.replace(/\.mogg$/, '').split('/')[0]
+				let songOffsetStart = songDataOffset
+
+				for (const song of songEntries) {
+					songOffsetStart += song.offset
+
+					if (song.songname === songname) {
+						reader.seek(songOffsetStart)
+						value = await reader.read(song.moggSize)
+						break
+					}
+
+					reader.seek(songOffsetStart)
+					continue
+				}
+			} else if (fileName.endsWith('.mid')) {
+				const songname = fileName.replace(/\.mid$/, '').split('/')[0]
+				let songOffsetStart = songDataOffset
+
+				for (const song of songEntries) {
+					songOffsetStart += song.offset + song.moggSize
+
+					if (song.songname === songname) {
+						reader.seek(songOffsetStart)
+						value = await reader.read(song.midiSize)
+						break
+					}
+
+					reader.seek(songOffsetStart)
+					continue
+				}
+			} else if (fileName.endsWith('_keep.png_ps3')) {
+				const songname = fileName
+					.replace(/_keep\.png_ps3$/, '')
+					.replace(/\/gen/, '')
+					.split('/')[0]
+				let songOffsetStart = songDataOffset
+
+				for (const song of songEntries) {
+					songOffsetStart += song.offset + song.moggSize + song.midiSize
+
+					if (song.songname === songname) {
+						reader.seek(songOffsetStart)
+						value = await reader.read(song.artworkSize)
+						break
+					}
+
+					reader.seek(songOffsetStart)
+					continue
+				}
+			} else if (fileName.endsWith('.milo_ps3')) {
+				const songname = fileName
+					.replace(/\.milo_ps3$/, '')
+					.replace(/\/gen/, '')
+					.split('/')[0]
+				let songOffsetStart = songDataOffset
+
+				for (const song of songEntries) {
+					songOffsetStart += song.offset + song.moggSize + song.midiSize + song.artworkSize
+
+					if (song.songname === songname) {
+						reader.seek(songOffsetStart)
+						value = await reader.read(song.miloSize)
+						break
+					}
+
+					reader.seek(songOffsetStart)
+					continue
+				}
+			}
+		}
+
+		await reader.close()
+		return value
+	}
+
+	/**
+	 * Searches for a file in the song package file and extracts its file contents. Returns `undefined` if the file doesn't exists on the song package file system.
+	 * - - - -
+	 * @param {T} fileName The name of the file.
+	 * @param {FilePathLikeTypes} destPath The destination path of the extracted file.
+	 * @returns {Promise<FilePath | undefined>}
+	 */
+	async extractFile<T extends RB3FileGetterTypes>(fileName: T, destPath: FilePathLikeTypes): Promise<FilePath | undefined> {
+		const stat = await this.stat()
+
+		const { songDataOffset, songEntries, dtaFileLength, thumbnailLength, packageCreatorThumbnailLength, packageNameLength, packageFolderNameLength, packageCreatorNameLength, descriptionLength } = stat.header
+
+		const entriesCount = songEntries.length
+		const src = this.path
+		const dest = pathLikeToFilePath(destPath)
+
+		if (fileName === 'songs.dta' && dtaFileLength) {
+			const start = 0x200 + entriesCount * 0x60 + packageNameLength + packageFolderNameLength + packageCreatorNameLength
+			const end = start + dtaFileLength
+			const read = src.createReadStream({ start, end })
+			const write = await dest.createWriteStream()
+			await pipeline(read, write)
+			return dest
+		} else if (fileName === 'folder.jpg' && thumbnailLength) {
+			const start = 0x200 + entriesCount * 0x60 + packageNameLength + packageFolderNameLength + packageCreatorNameLength + dtaFileLength + descriptionLength
+			const end = start + thumbnailLength
+			const read = src.createReadStream({ start, end })
+			const write = await dest.createWriteStream()
+			await pipeline(read, write)
+			return dest
+		} else if (fileName === 'creator.jpg' && packageCreatorThumbnailLength) {
+			const start = 0x200 + entriesCount * 0x60 + packageNameLength + packageFolderNameLength + packageCreatorNameLength + dtaFileLength + descriptionLength + thumbnailLength
+			const end = start + packageCreatorThumbnailLength
+			const read = src.createReadStream({ start, end })
+			const write = await dest.createWriteStream()
+			await pipeline(read, write)
+			return dest
+		} else if (fileName === 'package.md' && descriptionLength) {
+			const start = 0x200 + entriesCount * 0x60 + packageNameLength + packageFolderNameLength + packageCreatorNameLength + dtaFileLength
+			const end = start + descriptionLength
+			const read = src.createReadStream({ start, end })
+			const write = await dest.createWriteStream()
+			await pipeline(read, write)
+			return dest
+		} else {
+			if (fileName.endsWith('.mogg')) {
+				const songname = fileName.replace(/\.mogg$/, '').split('/')[0]
+				let songOffsetStart = songDataOffset
+
+				for (const song of songEntries) {
+					songOffsetStart += song.offset
+
+					if (song.songname === songname) {
+						const start = songOffsetStart
+						const end = songOffsetStart + song.moggSize
+						const read = src.createReadStream({ start, end })
+						const write = await dest.createWriteStream()
+						await pipeline(read, write)
+						return dest
+					}
+
+					continue
+				}
+			} else if (fileName.endsWith('.mid')) {
+				const songname = fileName.replace(/\.mid$/, '').split('/')[0]
+				let songOffsetStart = songDataOffset
+
+				for (const song of songEntries) {
+					songOffsetStart += song.offset + song.moggSize
+
+					if (song.songname === songname) {
+						const start = songOffsetStart
+						const end = songOffsetStart + song.midiSize
+						const read = src.createReadStream({ start, end })
+						const write = await dest.createWriteStream()
+						await pipeline(read, write)
+						return dest
+					}
+
+					continue
+				}
+			} else if (fileName.endsWith('_keep.png_ps3')) {
+				const songname = fileName
+					.replace(/_keep\.png_ps3$/, '')
+					.replace(/\/gen/, '')
+					.split('/')[0]
+				let songOffsetStart = songDataOffset
+
+				for (const song of songEntries) {
+					songOffsetStart += song.offset + song.moggSize + song.midiSize
+
+					if (song.songname === songname) {
+						const start = songOffsetStart
+						const end = songOffsetStart + song.artworkSize
+						const read = src.createReadStream({ start, end })
+						const write = await dest.createWriteStream()
+						await pipeline(read, write)
+						return dest
+					}
+
+					continue
+				}
+			} else if (fileName.endsWith('.milo_ps3')) {
+				const songname = fileName
+					.replace(/\.milo_ps3$/, '')
+					.replace(/\/gen/, '')
+					.split('/')[0]
+				let songOffsetStart = songDataOffset
+
+				for (const song of songEntries) {
+					songOffsetStart += song.offset + song.moggSize + song.midiSize + song.artworkSize
+
+					if (song.songname === songname) {
+						const start = songOffsetStart
+						const end = songOffsetStart + song.miloSize
+						const read = src.createReadStream({ start, end })
+						const write = await dest.createWriteStream()
+						await pipeline(read, write)
+						return dest
+					}
+
+					continue
+				}
+			}
 		}
 	}
 }

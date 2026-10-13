@@ -1,13 +1,9 @@
-import { BinaryReader, type FilePathLikeTypes, pathLikeToFilePath } from 'node-lib'
+import { BinaryReader, FilePath, type FilePathLikeTypes, pathLikeToFilePath } from 'node-lib'
 
 import { type RSPackImagePackageCategoryNumbers, type RSPackImagePackageCategoryValues, rsPackImage } from '../rspackimg/parseRSPackImage'
 import { dateISOFormatObjectToDateISOString } from '../utils'
+import { RB3_HEADER_PADDING, RB3_HEADER_SIZE, RB3_SONGNAME_MAX_LENGTH, RB3_SONG_ENTRY_PADDING, RB3_SONG_ENTRY_SIZE } from './RB3File'
 
-export const RB3_HEADER_SIZE = 0x60
-export const RB3_HEADER_PADDING = 0x16
-export const RB3_SONG_ENTRY_SIZE = 0x60
-export const RB3_SONG_ENTRY_PADDING = 0x0c
-export const RB3_SONGNAME_MAX_LENGTH = 0x2a
 export interface RB3FileHeaderSongEntriesObject {
 	/**
 	 * The song's internal name.
@@ -166,13 +162,13 @@ export interface RB3FileHeaderObject {
 	 */
 	dateISOString: string
 	/**
-	 * The size of the song package.
-	 */
-	packageSize: number
-	/**
 	 * The offset where the actual songs data starts on the package.
 	 */
 	songDataOffset: number
+	/**
+	 * The size of the song package.
+	 */
+	packageSize: number
 	/**
 	 * The console-specific format of the song package files
 	 *
@@ -180,6 +176,18 @@ export interface RB3FileHeaderObject {
 	 * - `1` = PS3.
 	 */
 	filesFormat: 'xbox' | 'ps3'
+	/**
+	 * The charter ID of the song entry on Rockshelf Music Store server.
+	 */
+	charterId: string | null
+	/**
+	 * The ID of the song entry on Rockshelf Music Store server.
+	 */
+	songId: string | null
+	/**
+	 * The version of the song on Rockshelf Music Store server.
+	 */
+	songVersion: number
 	/**
 	 * The song package contents hash in [SHA256 algorithm](https://en.wikipedia.org/wiki/SHA-2).
 	 */
@@ -196,9 +204,11 @@ export interface RB3FileHeaderObject {
  * @param {FilePathLikeTypes} rb3FilePath The path to the Rock Band 3 Song Package file to be parsed.
  * @returns {Promise<RB3FileHeaderObject>}
  */
-export const parseRB3FileHeader = async (rb3FilePath: FilePathLikeTypes): Promise<RB3FileHeaderObject> => {
-	const rb3File = pathLikeToFilePath(rb3FilePath)
-	const reader = await BinaryReader.fromFile(rb3File)
+export const parseRB3FileHeader = async (rb3FilePath: FilePathLikeTypes | Buffer): Promise<RB3FileHeaderObject> => {
+	let rb3File: FilePath | undefined
+	if (!Buffer.isBuffer(rb3FilePath)) rb3File = pathLikeToFilePath(rb3FilePath)
+
+	const reader = rb3File && !Buffer.isBuffer(rb3FilePath) ? await BinaryReader.fromFile(rb3File) : BinaryReader.fromBuffer(rb3FilePath as Buffer)
 
 	if (reader.length < RB3_HEADER_SIZE + RB3_SONG_ENTRY_SIZE) throw new Error('RB3 Song Package file is too small to process, is the file corrupted?')
 
@@ -243,6 +253,12 @@ export const parseRB3FileHeader = async (rb3FilePath: FilePathLikeTypes): Promis
 
 	const songDataOffset = await reader.readUInt32LE()
 	const packageSize = await reader.readUInt48LE()
+
+	let charterId: string | null = await reader.readHex(0x0c, false)
+	if (charterId === '0'.repeat(0x0c * 2)) charterId = null
+	let songId: string | null = await reader.readHex(0x0c, false)
+	if (songId === '0'.repeat(0x0c * 2)) songId = null
+	const songVersion = await reader.readUInt16LE()
 	reader.padding(RB3_HEADER_PADDING)
 	const packageHash = await reader.readHex(0x20, false)
 
@@ -282,6 +298,7 @@ export const parseRB3FileHeader = async (rb3FilePath: FilePathLikeTypes): Promis
 		descriptionLength,
 		thumbnailLength,
 		packageCreatorThumbnailLength,
+		packageCategory,
 		creationYear,
 		creationMonth,
 		creationDay,
@@ -289,10 +306,12 @@ export const parseRB3FileHeader = async (rb3FilePath: FilePathLikeTypes): Promis
 		creationMinute,
 		creationSecond,
 		dateISOString,
-		packageSize,
 		songDataOffset,
+		packageSize,
 		filesFormat,
-		packageCategory,
+		charterId,
+		songId,
+		songVersion,
 		packageHash,
 		songEntries,
 	}

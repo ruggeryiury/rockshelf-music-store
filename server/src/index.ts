@@ -5,23 +5,20 @@ import { type ZodTypeProvider } from '@fastify/type-provider-zod'
 import { LogAPI } from './core/api/LogAPI'
 import { ServerInit } from './core/api/ServerInit'
 import { AdminRoute } from './routes/admin'
+import { AlbumRoute } from './routes/albums'
 import { SongRoute } from './routes/songs'
 import { StatusRoute } from './routes/status'
 import { UserRoute } from './routes/users'
 
 export const app = Fastify({ logController: new LogController({ disableRequestLogging: true }) }).withTypeProvider<ZodTypeProvider>()
-ServerInit.setValidatorAndSerializerCompiler(app)
-
-await ServerInit.initFileSystem()
-await ServerInit.initPlugins(app)
-await ServerInit.initServerPlugins(app)
-await ServerInit.initSwaggerPlugins(app)
+await ServerInit.init(app)
 
 // Routes
 await app.register(UserRoute)
 await app.register(StatusRoute)
 await app.register(AdminRoute)
 await app.register(SongRoute)
+await app.register(AlbumRoute)
 
 try {
 	await app.ready()

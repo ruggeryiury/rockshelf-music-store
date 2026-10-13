@@ -25,7 +25,6 @@ export const getSongThumbnail = fp((fastify, _, done) => {
 		async (req, reply) => {
 			const { songId } = req.params
 			const { format, size, quality } = req.query
-			console.log(req.query)
 			const mime = format ? (format === 'jpg' ? 'jpeg' : format) : 'webp'
 
 			const song = await fastify.db.songs.findOne({ _id: new fastify.mongo.ObjectId(songId) })
@@ -37,6 +36,8 @@ export const getSongThumbnail = fp((fastify, _, done) => {
 			}
 
 			const rawImgPath = ServerFileSystem.publicDir().gotoFile(`artworks/${song.albumId?.toHexString() ?? 'website'}.webp`)
+
+			// Load into memory as it blocks the file access
 			const rawImgBuffer = await rawImgPath.read()
 			const processedImg = sharp(rawImgBuffer).toFormat(mime, { quality })
 

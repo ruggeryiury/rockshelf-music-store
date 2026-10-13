@@ -1,10 +1,15 @@
 import fp from 'fastify-plugin'
+import type { FilePath } from 'node-lib'
+import { Readable } from 'node:stream'
 
 import type { SongIdParams } from '@schemas'
 
 import { ServerFileSystem } from '../../core/api/ServerFileSystem'
 import { SwaggerAPI } from '../../core/api/SwaggerAPI'
 import { ServerError } from '../../core/plugins/errors'
+import type { RB3CompatibleDTAFile } from '../../core/rockshelf/dta/dtaStruct'
+import { stringifyDTA } from '../../core/rockshelf/dta/stringifyDTA'
+import { genRB3BufferFromEntry } from '../../core/rockshelf/rb3/genRB3BufferFromEntry'
 
 export const songDownload = fp((fastify, _, done) => {
 	fastify.get<{ Params: SongIdParams }>(
@@ -29,11 +34,20 @@ export const songDownload = fp((fastify, _, done) => {
 
 			await fastify.db.songs.updateOne({ _id: new fastify.mongo.ObjectId(songId) }, { $inc: { downloads: 1 } })
 
-			const songFilePath = ServerFileSystem.publicDir().gotoFile(`users/${song.userId.toHexString()}/songs/${songId}.rb3`)
+			const songFilePath = ServerFileSystem.publicDir().gotoFile(`users/${song.charterId.toHexString()}/songs/${songId}.bin`)
 			if (!songFilePath.exists) throw new ServerError({ code: 'UNAVAILABLE_SONG_FILE' })
 
-			reply.type('application/octec-stream').header('content-disposition', `attachment; filename=${songId}.rb3`)
-			return reply.sendFile(songFilePath.fullname, songFilePath.root)
+			const dtaContents = Buffer.from(stringifyDTA({ songs: [song.songData as RB3CompatibleDTAFile], updates: [] }))
+
+			let thumbnailPath: FilePath | undefined
+			if (song.albumId) {
+				thumbnailPath = ServerFileSystem.publicDir().gotoFile(`artworks/${song.albumId.toHexString()}.webp`)
+			}
+
+			return reply
+				.type('application/octec-stream')
+				.header('content-disposition', `attachment; filename=${song.songData.id}.rb3`)
+				.send(Readable.from(genRB3BufferFromEntry(songFilePath, song, dtaContents, thumbnailPath)))
 		},
 	)
 	done()

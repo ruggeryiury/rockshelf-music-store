@@ -5,3 +5,4 @@ dist
 **/.tanstack
 server/public
 server/logs
+dev/

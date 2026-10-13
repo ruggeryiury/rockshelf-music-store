@@ -1,4 +1,5 @@
 import fp from 'fastify-plugin'
+import ms from 'ms'
 import type { LiteralUnion } from 'type-fest'
 import { ZodError } from 'zod'
 
@@ -127,8 +128,16 @@ export const ErrorHandlerPlugin = fp((fastify, _, done) => {
  * Customizes the Fastify default "route not found" using a standardized `GenericServerResponse` response.
  */
 export const NotFoundHandlerPlugin = fp((fastify, _, done) => {
-	fastify.setNotFoundHandler((req) => {
-		throw new ServerError({ code: 'ROUTE_NOT_FOUND', messageValues: { method: req.method, url: req.url } })
-	})
+	fastify.setNotFoundHandler(
+		{
+			preHandler: fastify.rateLimit({
+				max: 10,
+				timeWindow: ms('5 minutes'),
+			}),
+		},
+		(req) => {
+			throw new ServerError({ code: 'ROUTE_NOT_FOUND', messageValues: { method: req.method, url: req.url } })
+		},
+	)
 	done()
 })

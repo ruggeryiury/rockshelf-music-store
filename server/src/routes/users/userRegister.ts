@@ -5,6 +5,7 @@ import { LogAPI } from '../../core/api/LogAPI'
 import { SwaggerAPI } from '../../core/api/SwaggerAPI'
 import { ServerError } from '../../core/plugins/errors'
 import { success } from '../../core/plugins/response'
+import { normalizeString } from '../../core/rockshelf/dta/textMethods'
 import { type UserRegisterBody, userRegisterBodySchema } from '../../schemas'
 
 export const userRegister = fp((fastify, _, done) => {
@@ -32,7 +33,7 @@ export const userRegister = fp((fastify, _, done) => {
 			const passwordHash = await fastify.dbFuncs.users.hashPassword(password)
 
 			try {
-				const newUser = await fastify.db.users.insertOne({ _id: new fastify.mongo.ObjectId(), username, email, passwordHash, createdAt: now, modifiedAt: now, rank: 0, country: '', verified: false, active: true, avatarVer: 0 })
+				const newUser = await fastify.db.users.insertOne({ _id: new fastify.mongo.ObjectId(), username, usernameSearch: normalizeString(username), email, passwordHash, createdAt: now, modifiedAt: now, rank: 0, country: '', verified: false, active: true, avatarVer: 0 })
 
 				const { token, tokenHash } = await fastify.dbFuncs.verifications.genVerificationToken()
 

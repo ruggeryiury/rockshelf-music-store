@@ -1,4 +1,5 @@
 import { type FastifyInstance } from 'fastify'
+import ms from 'ms'
 import { DirPath } from 'node-lib'
 
 import authPlugin from '@fastify/auth'
@@ -7,6 +8,7 @@ import envPlugin from '@fastify/env'
 import jwtPlugin from '@fastify/jwt'
 import mongodbPlugin from '@fastify/mongodb'
 import multipartPlugin from '@fastify/multipart'
+import rateLimitPlugin from '@fastify/rate-limit'
 import staticPlugin from '@fastify/static'
 import swaggerPlugin from '@fastify/swagger'
 import swaggerUIPlugin from '@fastify/swagger-ui'
@@ -14,9 +16,10 @@ import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from '@fas
 import websocketPlugin from '@fastify/websocket'
 import { type ServerEnvObject, serverEnvSchema } from '@schemas'
 
+import { app as application } from '../../'
 import { DBPlugin } from '../plugins/db'
 import { NodeEnvPlugin } from '../plugins/env'
-import { ErrorHandlerPlugin, NotFoundHandlerPlugin } from '../plugins/errors'
+import { ErrorHandlerPlugin, NotFoundHandlerPlugin, ServerError } from '../plugins/errors'
 import { LogPlugin } from '../plugins/log'
 import { ServerFileSystem } from './ServerFileSystem'
 
@@ -29,18 +32,25 @@ export class ServerInit {
 	 * - - - -
 	 * @param {FastifyInstance} app The Fastify instance of the server.
 	 */
-	static setValidatorAndSerializerCompiler(app: FastifyInstance) {
+	static setValidatorAndSerializerCompiler(app: FastifyInstance): void {
 		app.setValidatorCompiler(validatorCompiler)
 		app.setSerializerCompiler(serializerCompiler)
 	}
 	/**
 	 * Initializes the server's file system.
 	 */
-	static async initFileSystem() {
+	static async initFileSystem(): Promise<void> {
 		const serverRoot = ServerFileSystem.cwd()
 
 		const logsDir = serverRoot.gotoDir('logs')
 		if (!logsDir.exists) await logsDir.mkDir()
+
+		const serverTempDir = serverRoot.gotoDir('temp')
+		if (!serverTempDir.exists) await serverTempDir.mkDir()
+		else {
+			await serverTempDir.deleteDir(true)
+			await serverTempDir.mkDir()
+		}
 
 		const publicDir = ServerFileSystem.publicDir()
 		if (!publicDir.exists) await publicDir.mkDir()
@@ -83,6 +93,13 @@ export class ServerInit {
 			origin: app.getEnvs<ServerEnvObject>().NODE_ENV === 'development' ? true : ['https://your-production-site.com'],
 			methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 		})
+		await app.register(rateLimitPlugin, {
+			max: 50,
+			timeWindow: ms('1 minute'),
+			errorResponseBuilder(_, context) {
+				throw new ServerError({ code: 'TOO_MANY_REQUESTS', messageValues: { count: context.after } })
+			},
+		})
 	}
 
 	/**
@@ -123,6 +140,7 @@ export class ServerInit {
 						{ name: 'User Verification/Reset Password', description: 'Endpoints to verify users, re-send user verification e-mails and reset passwords' },
 						{ name: 'Song (Data)', description: 'Endpoints to fetch data and content from a song (requires song ID)' },
 						{ name: 'Song (Methods)', description: 'Endpoints to manipulate a song entry (requires user authorization token)' },
+						{ name: 'Album (Data)', description: 'Endpoints to fetch data and content from an album (requires album ID)' },
 						{ name: 'Admin', description: 'Endpoints that required administrator privileges' },
 					],
 					components: {
@@ -142,5 +160,13 @@ export class ServerInit {
 				uiConfig: { persistAuthorization: true },
 			})
 		}
+	}
+
+	static async init(app: typeof application) {
+		ServerInit.setValidatorAndSerializerCompiler(app)
+		await ServerInit.initFileSystem()
+		await ServerInit.initPlugins(app)
+		await ServerInit.initServerPlugins(app)
+		await ServerInit.initSwaggerPlugins(app)
 	}
 }

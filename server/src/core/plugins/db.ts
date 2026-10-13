@@ -21,7 +21,9 @@ export const DBPlugin = fp(async (fastify) => {
 	await accVerifications.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })
 	await passResetVerifications.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })
 
+	await songs.createIndex('songData.id', { unique: true })
 	await songs.createIndex('songData.song_id', { unique: true })
+	await songs.createIndex('songData.songname', { unique: true })
 
 	fastify.decorateRequest('userDocument')
 

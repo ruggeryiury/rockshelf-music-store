@@ -1,5 +1,7 @@
 import stripAnsi from 'strip-ansi'
 
+import type { RB3CompatibleDTAFile } from '../rockshelf/dta/dtaStruct'
+
 /**
  * Removes a matching pair of double quotes surrounding a string.
  *
@@ -106,4 +108,13 @@ export const normalizeStr = (value: string): string => {
 		.normalize('NFD')
 		.replace(/\p{Diacritic}/gu, '')
 		.toLowerCase()
+}
+
+export const generateInternalSongname = (songname: string) => {
+	return `${songname
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/(([^()]*))/g, (_match, content: string) => (content.length > 24 || /\b(?:ft|feat|featuring).?\b/i.test(content) ? '' : content))
+		.replace(/[^a-zA-Z0-9]/g, '')
+		.toLowerCase()}`
 }
