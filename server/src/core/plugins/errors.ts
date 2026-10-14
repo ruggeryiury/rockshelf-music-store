@@ -4,7 +4,7 @@ import type { LiteralUnion } from 'type-fest'
 import { ZodError } from 'zod'
 
 import type { GenericServerResponse } from '@schemas'
-import { interpolateStr } from '@utils/string'
+import { interpolateStr } from '@utils/strNum'
 
 import { type HTTPCodeNames, type HTTPStatusCodes, type ReplyCodeNames, codeMap, httpCodes } from '../../constants'
 

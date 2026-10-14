@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 
-import { interpolateStr } from '@utils/string'
+import { interpolateStr } from '@utils/strNum'
 
 import { type ReplyCodeNames, codeMap, httpCodes } from '../../constants'
 import { LogAPI } from '../api/LogAPI'

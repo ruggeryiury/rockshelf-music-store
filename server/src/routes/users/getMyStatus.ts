@@ -24,7 +24,7 @@ export const getMyStatus = fp((fastify, _, done) => {
 					},
 				],
 			},
-			preHandler: fastify.auth([userBearerAuth]),
+			preHandler: fastify.auth([userBearerAuth()]),
 		},
 		async (req, reply) => {
 			const user = req.userDocument

@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs'
 import fp from 'fastify-plugin'
 import { Cryptography } from 'node-lib'
 
-import type { AlbumDocument, ArtistDocument, SongDocument, UserDocument, VerificationDocument } from '../../schemas/db'
+import type { AlbumDocument, ArtistDocument, CountersDocument, SongDocument, UserDocument, VerificationDocument } from '../../schemas/db'
 import { userPasswordValidator } from '../utils/userPasswordValidator'
 import { ServerError } from './errors'
 
@@ -13,7 +13,8 @@ export const DBPlugin = fp(async (fastify) => {
 	const songs = fastify.mongo.db?.collection<SongDocument>('songs')
 	const artists = fastify.mongo.db?.collection<ArtistDocument>('artists')
 	const albums = fastify.mongo.db?.collection<AlbumDocument>('albums')
-	if (!users || !accVerifications || !passResetVerifications || !songs || !artists || !albums) throw new Error("Couldn't estabilish schema documents for the database")
+	const counters = fastify.mongo.db?.collection<CountersDocument>('counters')
+	if (!users || !accVerifications || !passResetVerifications || !songs || !artists || !albums || !counters) throw new Error("Couldn't estabilish schema documents for the database")
 
 	await users.createIndex('email', { unique: true })
 	await users.createIndex('username', { unique: true, collation: { locale: 'en', strength: 2 } })
@@ -25,9 +26,20 @@ export const DBPlugin = fp(async (fastify) => {
 	await songs.createIndex('songData.song_id', { unique: true })
 	await songs.createIndex('songData.songname', { unique: true })
 
+	const countersCount = await counters.countDocuments()
+
+	if (countersCount === 0)
+		await counters.insertMany([
+			{
+				_id: 'songID',
+				prefix: 2000,
+				value: 0,
+			},
+		])
+
 	fastify.decorateRequest('userDocument')
 
-	fastify.decorate('db', { users, accVerifications, passResetVerifications, songs, artists, albums })
+	fastify.decorate('db', { users, accVerifications, passResetVerifications, songs, artists, albums, counters })
 	fastify.decorate('dbFuncs', {
 		users: {
 			validateUserPassword: (password) => {
@@ -85,6 +97,31 @@ export const DBPlugin = fp(async (fastify) => {
 		albums: {
 			findById: async (id) => await fastify.db.albums.findOne({ _id: new fastify.mongo.ObjectId(id) }),
 			findByHash: async (hash) => await fastify.db.albums.findOne({ hash }),
+		},
+		counters: {
+			newSongID: async () => {
+				let result = await counters.findOneAndUpdate(
+					{ _id: 'songID' },
+					{ $inc: { value: 1 } },
+					{
+						upsert: true,
+						returnDocument: 'after',
+					},
+				)
+
+				if (result!.value > 999999) {
+					result = await counters.findOneAndUpdate(
+						{ _id: 'songID' },
+						{ $inc: { prefix: 1 }, $set: { value: 0 } },
+						{
+							upsert: true,
+							returnDocument: 'after',
+						},
+					)
+				}
+
+				return Number(`${result!.prefix.toString()}${result!.value.toString().padStart(3, '0')}`)
+			},
 		},
 	})
 })

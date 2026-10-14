@@ -5,7 +5,7 @@ _Rockshelf Music Store_ joins a server and a website application to upload and d
 ## Features
 
 - Fixed duplicated internal songnames and song IDs problems:
-  - One of the main problems on the Rock Band 3 custom distribution is faulty unique values (like the internal name of the song files and song ID in-game) management. _Rockshelf Music Store_ is able to bypass these problems, implementing an automatic system to avoid song ID duplicates, using the Rock Band 3 Enhanced Song ID generator.
+  - One of the main problems on the Rock Band 3 custom distribution is faulty unique values (like the internal name of the song files and song ID in-game) management throughout years of the community. _Rockshelf Music Store_ is able to bypass these problems, using a incremental ID system.
 - Fixed album artwork discrepancies:
   - Syncing the album artworks of the song, _Rockshelf Music Store_ is able to mitigate the discrepancy problem, distributing the same artwork file for songs that shares the same album.
 - Custom versioning to track updates:

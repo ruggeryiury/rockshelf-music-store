@@ -377,6 +377,7 @@ export const codeMap = {
 	DUPLICATED_SONG_ID: [409, 'A song has the same song ID from the provided song'],
 	DUPLICATED_USERNAME: [409, 'Provided username is already being used'],
 	FORBIDDEN_BANNED_USER: [403, 'User banned'],
+	FORBIDDEN_UNVERIFIED_USER: [403, 'You need to verify this account to use this resource'],
 	FORBIDDEN_NO_PRIVILEGES: [403, 'You have no privileges to access this route'],
 	IMAGE_PROCESSING_INVALID_CROP_DIMENSIONS: [400, 'Crop area exceeds image dimensions'],
 	INVALID_RB3_FILE: [400, 'The provided RB3 file is invalid or corrupted'],
@@ -411,6 +412,7 @@ export const codeMap = {
 	USER_PASSWORD_NO_UPPERCASE: [401, 'Provided user password has no uppercase letters'],
 	USER_PASSWORD_TOO_BIG: [401, 'Provided user password is too big'],
 	USER_PASSWORD_TOO_SMALL: [401, 'Provided user password is too small'],
+	RB3_FILE_ALREADY_UPLOADED: [409, 'Provided RB3 file contents hash matches an already uploaded song'],
 
 	// Generic codes
 	OK: [200, 'OK'],

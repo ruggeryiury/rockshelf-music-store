@@ -30,6 +30,12 @@ export class ServerFileSystem {
 	 */
 	static tempDir = (): DirPath => DirPath.of(process.cwd(), 'temp')
 	/**
+	 * The directory path of the server's binary file directory.
+	 * - - - -
+	 * @returns {DirPath}
+	 */
+	static binDir = (): DirPath => DirPath.of(process.cwd(), 'src/bin')
+	/**
 	 * Get a temporary file path you can write to and returns a `FilePath` instance pointing to the temporary file path.
 	 * - - - -
 	 * @param {FileOptions | undefined} [options] `OPTIONAL` An object with values that tweaks the temporary file naming process.

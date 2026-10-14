@@ -1,12 +1,12 @@
 import type { Collection, WithId } from 'mongodb'
 
 import type { DecodedUserTokenObject, ServerEnvObject, SignedUserTokenObject } from './schemas'
-import type { AlbumDocument, ArtistDocument, SongDocument, UserDocument, VerificationDocument } from './schemas/db'
+import type { AlbumDocument, ArtistDocument, CountersDocument, SongDocument, UserDocument, VerificationDocument } from './schemas/db'
 
 declare module 'fastify' {
 	interface FastifyRequest {
 		/**
-		 * User document schema populated only on routes which uses `userBearerAuth` or `adminBearerAuth` authorization handlers.
+		 * User document schema populated only on routes which uses `userBearerAuth` authorization handlers.
 		 */
 		userDocument: WithId<UserDocument>
 	}
@@ -40,6 +40,7 @@ declare module 'fastify' {
 			passResetVerifications: Collection<VerificationDocument>
 			artists: Collection<ArtistDocument>
 			albums: Collection<AlbumDocument>
+			counters: Collection<CountersDocument>
 		}
 		dbFuncs: {
 			users: {
@@ -109,6 +110,9 @@ declare module 'fastify' {
 			albums: {
 				findById: (id: string) => Promise<WithId<AlbumDocument> | null>
 				findByHash: (hash: string) => Promise<WithId<AlbumDocument> | null>
+			}
+			counters: {
+				newSongID: () => Promise<number>
 			}
 		}
 	}

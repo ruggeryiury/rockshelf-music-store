@@ -5,7 +5,7 @@ import os from 'node:os'
 import type { Primitive } from 'type-fest'
 
 import { type GenericServerResponse, type ServerEnvObject } from '@schemas'
-import { decodeChalkString, stripSurroundingQuotes } from '@utils/string'
+import { decodeChalkString, stripSurroundingQuotes } from '@utils/strNum'
 
 import { ServerFileSystem } from './ServerFileSystem'
 
@@ -55,12 +55,21 @@ export class LogAPI {
 			const songCount = await app.db.songs.countDocuments()
 			const artistsCount = await app.db.artists.countDocuments()
 			const albumsCount = await app.db.albums.countDocuments()
+			const counters = await app.db.counters.find().toArray()
 			LogAPI.log(LogAPI.chalk.blue('Server status:'))
 			LogAPI.logObject({ 'Users Count': usersCount })
 			LogAPI.logObject({ 'Songs Count': songCount })
 			LogAPI.logObject({ 'Artists Count': artistsCount })
 			LogAPI.logObject({ 'Albums Count': albumsCount })
 			LogAPI.log()
+
+			LogAPI.log(LogAPI.chalk.blue('Counters:'))
+			for (const counter of counters) {
+				if (counter._id === 'songID') {
+					LogAPI.log(`${LogAPI.chalk.italic('Song ID Prefix:')} ${LogAPI.chalk.green(counter.prefix)}`)
+					LogAPI.log(`${LogAPI.chalk.italic('Song ID Count:')} ${LogAPI.chalk.green(counter.value)}`)
+				}
+			}
 		}
 	}
 	/**

@@ -1,7 +1,7 @@
 import fp from 'fastify-plugin'
 
 import { SwaggerAPI } from '../../core/api/SwaggerAPI'
-import { adminBearerAuth } from '../../core/plugins/auth'
+import { userBearerAuth } from '../../core/plugins/auth'
 import { ServerError } from '../../core/plugins/errors'
 import { success } from '../../core/plugins/response'
 import { type UserBanBody, userBanBodySchema } from '../../schemas'
@@ -27,7 +27,7 @@ export const userBan = fp((fastify, _, done) => {
 					},
 				],
 			},
-			preHandler: fastify.auth([adminBearerAuth]),
+			preHandler: fastify.auth([userBearerAuth({ requiredRank: 3 })]),
 		},
 		async (req, reply) => {
 			const { userId } = req.body

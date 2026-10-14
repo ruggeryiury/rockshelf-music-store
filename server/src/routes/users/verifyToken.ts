@@ -22,7 +22,7 @@ export const userVerifyToken = fp((fastify, _, done) => {
 					},
 				],
 			},
-			preHandler: fastify.auth([userBearerAuth]),
+			preHandler: fastify.auth([userBearerAuth()]),
 		},
 		async (req, reply) => {
 			return success(req, reply, { code: 'OK' })

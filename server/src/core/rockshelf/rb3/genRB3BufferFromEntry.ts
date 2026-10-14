@@ -3,6 +3,7 @@ import { BinaryReader, BinaryWriter, FilePath, type FilePathLikeTypes, createHas
 import sharp from 'sharp'
 
 import type { SongDocument } from '../../../schemas/db'
+import { ServerFileSystem } from '../../api/ServerFileSystem'
 import { dateISOFormatToObject } from '../utils'
 import { RB3_HEADER_SIZE, RB3_SONG_ENTRY_SIZE } from './RB3File'
 
@@ -59,7 +60,14 @@ export async function* genRB3BufferFromEntry(songFilePath: FilePathLikeTypes, so
 	reader.seek(0x20)
 	const moggSize = await reader.readUInt32LE()
 	const midiSize = await reader.readUInt32LE()
-	const artworkSize = await reader.readUInt32LE()
+
+	let artworkSize = 0
+	if (song.albumId && song.songData.album_art) {
+		const songTexturePath = ServerFileSystem.artworksDir().gotoFile(`${song.albumId.toHexString()}_keep.png_ps3`)
+		const { size } = await songTexturePath.stat()
+		artworkSize = size
+	}
+
 	const miloSize = await reader.readUInt32LE()
 	writer.writeUInt48LE(moggSize + midiSize + artworkSize + miloSize)
 
@@ -104,7 +112,18 @@ export async function* genRB3BufferFromEntry(songFilePath: FilePathLikeTypes, so
 
 	const songFile = pathLikeToFilePath(songFilePath)
 
-	for await (const chunk of songFile.createReadStream({ start: 0x30 })) {
+	for await (const chunk of songFile.createReadStream({ start: 0x30, end: 0x30 + moggSize + midiSize - 1 })) {
+		yield chunk as Buffer
+	}
+
+	if (song.albumId && song.songData.album_art && artworkSize > 0) {
+		const songTexturePath = ServerFileSystem.artworksDir().gotoFile(`${song.albumId.toHexString()}_keep.png_ps3`)
+		for await (const chunk of songTexturePath.createReadStream()) {
+			yield chunk as Buffer
+		}
+	}
+
+	for await (const chunk of songFile.createReadStream({ start: 0x30 + moggSize + midiSize })) {
 		yield chunk as Buffer
 	}
 }

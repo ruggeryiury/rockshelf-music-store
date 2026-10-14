@@ -29,7 +29,7 @@ export const updateMyUser = fp((fastify, _, done) => {
 					},
 				],
 			},
-			preHandler: fastify.auth([userBearerAuth]),
+			preHandler: fastify.auth([userBearerAuth()]),
 		},
 		async (req, reply) => {
 			const { _id } = req.userDocument

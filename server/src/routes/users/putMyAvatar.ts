@@ -30,7 +30,7 @@ export const putMyAvatar = fp((fastify, _, done) => {
 					},
 				],
 			},
-			preHandler: fastify.auth([userBearerAuth]),
+			preHandler: fastify.auth([userBearerAuth()]),
 		},
 		async (req, reply) => {
 			const parts = req.parts({ limits: { fileSize: parseReadableBytesSize('1MB'), files: 1 } })

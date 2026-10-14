@@ -2,6 +2,7 @@ import stripAnsi from 'strip-ansi'
 
 import type { RB3CompatibleDTAFile } from '../rockshelf/dta/dtaStruct'
 
+// #region String
 /**
  * Removes a matching pair of double quotes surrounding a string.
  *
@@ -110,11 +111,23 @@ export const normalizeStr = (value: string): string => {
 		.toLowerCase()
 }
 
-export const generateInternalSongname = (songname: string) => {
-	return `${songname
+export const generateInternalSongname = (songname: string, maxLength: number = 40) => {
+	return `ms_${songname
 		.normalize('NFD')
 		.replace(/[\u0300-\u036f]/g, '')
 		.replace(/(([^()]*))/g, (_match, content: string) => (content.length > 24 || /\b(?:ft|feat|featuring).?\b/i.test(content) ? '' : content))
 		.replace(/[^a-zA-Z0-9]/g, '')
-		.toLowerCase()}`
+		.toLowerCase()
+		.slice(0, maxLength)}`
+}
+
+// #region Number
+/**
+ * Returns the number of digits in a positive integer.
+ *
+ * @param value - The number to count digits from.
+ * @returns The number of digits.
+ */
+export const countDigits = (value: number): number => {
+	return value === 0 ? 1 : Math.floor(Math.log10(Math.abs(value))) + 1
 }

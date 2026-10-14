@@ -26,7 +26,7 @@ export const getMyUserDetails = fp((fastify, _, done) => {
 	fastify.get(
 		'/api/v1/users/me',
 		{
-			preHandler: fastify.auth([userBearerAuth]),
+			preHandler: fastify.auth([userBearerAuth()]),
 			schema,
 		},
 		async (req, reply) => {

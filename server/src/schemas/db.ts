@@ -80,6 +80,14 @@ export const dbAlbumDocumentSchema = z.object({
 })
 export type AlbumDocument = z.infer<typeof dbAlbumDocumentSchema>
 
+// #region CountersDocument
+export const dbCountersDocumentSchema = z.object({
+	_id: z.union([z.literal('songID')]),
+	prefix: z.int(),
+	value: z.int(),
+})
+export type CountersDocument = z.infer<typeof dbCountersDocumentSchema>
+
 // #region Unserialized
 export const getUserDetailsSuccessSchema = genericServerResponse.extend({
 	data: z

@@ -28,7 +28,7 @@ export const getMyAvatar = fp((fastify, _, done) => {
 					},
 				],
 			},
-			preHandler: fastify.auth([userBearerAuth]),
+			preHandler: fastify.auth([userBearerAuth()]),
 		},
 		async (req, reply) => {
 			const { format, size, quality } = req.query
