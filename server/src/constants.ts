@@ -413,6 +413,7 @@ export const codeMap = {
 	USER_PASSWORD_TOO_BIG: [401, 'Provided user password is too big'],
 	USER_PASSWORD_TOO_SMALL: [401, 'Provided user password is too small'],
 	RB3_FILE_ALREADY_UPLOADED: [409, 'Provided RB3 file contents hash matches an already uploaded song'],
+	SONG_ID_NO_ARTWORK: [404, "The song doesn't have an artwork file"],
 
 	// Generic codes
 	OK: [200, 'OK'],

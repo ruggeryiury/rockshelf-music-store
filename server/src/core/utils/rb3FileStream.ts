@@ -2,10 +2,10 @@ import type { WithId } from 'mongodb'
 import { BinaryReader, BinaryWriter, FilePath, type FilePathLikeTypes, createHashFromBuffer, pathLikeToFilePath } from 'node-lib'
 import sharp from 'sharp'
 
-import type { SongDocument } from '../../../schemas/db'
-import { ServerFileSystem } from '../../api/ServerFileSystem'
-import { dateISOFormatToObject } from '../utils'
-import { RB3_HEADER_SIZE, RB3_SONG_ENTRY_SIZE } from './RB3File'
+import type { SongDocument } from '../../schemas/db'
+import { ServerFileSystem } from '../api/ServerFileSystem'
+import { RB3_HEADER_SIZE, RB3_SONG_ENTRY_SIZE } from '../rockshelf/rb3/RB3File'
+import { dateISOFormatToObject } from '../rockshelf/utils'
 
 /**
  * Streams a Rock Band 3 Song Package file buffer from the database collection returning an `AsyncGenerator` object.
@@ -13,9 +13,10 @@ import { RB3_HEADER_SIZE, RB3_SONG_ENTRY_SIZE } from './RB3File'
  * @param {FilePathLikeTypes} songFilePath
  * @param {WithId<SongDocument>} song
  * @param {Buffer} dtaContents
- * @param {FilePath | undefined}[thumbnailPath] `OPTIONAL`
+ * @param {FilePath | undefined} [thumbnailPath] `OPTIONAL`
+ * @yields {Buffer}
  */
-export async function* genRB3BufferFromEntry(songFilePath: FilePathLikeTypes, song: WithId<SongDocument>, dtaContents: Buffer, thumbnailPath?: FilePath): AsyncGenerator<Buffer> {
+export async function* rb3FileStream(songFilePath: FilePathLikeTypes, song: WithId<SongDocument>, dtaContents: Buffer, thumbnailPath?: FilePath): AsyncGenerator<Buffer> {
 	const writer = new BinaryWriter()
 	let thumbnail: Buffer | undefined
 

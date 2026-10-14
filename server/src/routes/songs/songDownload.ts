@@ -3,13 +3,13 @@ import type { FilePath } from 'node-lib'
 import { Readable } from 'node:stream'
 
 import type { SongIdParams } from '@schemas'
+import { rb3FileStream } from '@utils/rb3FileStream'
 
 import { ServerFileSystem } from '../../core/api/ServerFileSystem'
 import { SwaggerAPI } from '../../core/api/SwaggerAPI'
 import { ServerError } from '../../core/plugins/errors'
 import type { RB3CompatibleDTAFile } from '../../core/rockshelf/dta/dtaStruct'
 import { stringifyDTA } from '../../core/rockshelf/dta/stringifyDTA'
-import { genRB3BufferFromEntry } from '../../core/rockshelf/rb3/genRB3BufferFromEntry'
 
 export const songDownload = fp((fastify, _, done) => {
 	fastify.get<{ Params: SongIdParams }>(
@@ -19,7 +19,7 @@ export const songDownload = fp((fastify, _, done) => {
 				summary: 'Downloads a song RB3 file',
 				tags: ['Song (Data)'],
 				response: {
-					200: SwaggerAPI.replySchemaWithFile('application/octec-stream').describe('Song RB3 file retrieved successfully'),
+					200: SwaggerAPI.replySchemaWithFile('application/octet-stream').describe('Song RB3 file retrieved successfully'),
 					404: SwaggerAPI.replySchema('SONG_ID_NOT_FOUND').describe('No registered song found with provided ID'),
 					423: SwaggerAPI.replySchema('UNAVAILABLE_SONG_FILE').describe("The requested song file is being processed or modified and it's unavailable at the moment"),
 				},
@@ -45,9 +45,9 @@ export const songDownload = fp((fastify, _, done) => {
 			}
 
 			return reply
-				.type('application/octec-stream')
-				.header('content-disposition', `attachment; filename=${song.songData.id}.rb3`)
-				.send(Readable.from(genRB3BufferFromEntry(songFilePath, song, dtaContents, thumbnailPath)))
+				.type('application/octet-stream')
+				.header('content-disposition', `attachment; filename="${song.songData.id}.rb3"`)
+				.send(Readable.from(rb3FileStream(songFilePath, song, dtaContents, thumbnailPath)))
 		},
 	)
 	done()

@@ -15,7 +15,7 @@ import { success } from '../../core/plugins/response'
 import type { RB3CompatibleDTAFile } from '../../core/rockshelf/dta/dtaStruct'
 import { normalizeString } from '../../core/rockshelf/dta/textMethods'
 import { RB3File } from '../../core/rockshelf/rb3/RB3File'
-import type { RB3FileHeaderSongEntriesObject } from '../../core/rockshelf/rb3/parseRB3File'
+import type { RB3FileHeaderSongEntriesObject } from '../../core/rockshelf/rb3/parseRB3FileHeader'
 import { texPS3ToImage } from '../../core/rockshelf/rspackimg/texToDDS'
 
 export const songRegister = fp((fastify, _, done) => {
@@ -299,6 +299,8 @@ export const songRegister = fp((fastify, _, done) => {
 				songData.id = newSongname
 				songData.songname = newSongname
 				songData.song_id = newSongID
+				songData.encoding = 'latin1'
+				if (songData.vocal_gender !== 'male' && songData.vocal_gender !== 'female') songData.vocal_gender = 'male'
 
 				await fastify.db.songs.insertOne({
 					_id: songId,

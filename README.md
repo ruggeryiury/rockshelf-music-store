@@ -1,6 +1,6 @@
 # Rockshelf Music Store
 
-_Rockshelf Music Store_ joins a server and a website application to upload and download custom contents built exclusively for Rock Band 3 customs. It was created thinking to avoid emerging problems with a standardized custom distribution service.
+_Rockshelf Music Store_ joins a server and a website application to upload and download custom contents built exclusively for Rock Band 3 customs. It was created thinking on emerging problems with a standardized custom distribution service.
 
 ## Features
 
@@ -11,7 +11,7 @@ _Rockshelf Music Store_ joins a server and a website application to upload and d
 - Custom versioning to track updates:
   - Along with [Rockshelf](https://github.com/ruggeryiury/rockshelf), players can track outdated customs and automatically update them.
 - Custom creation role system:
-  - As a charter, you can tag other charters that did a collaboration with you on your custom song project with a proper role assignment system.
+  - As a charter, you can tag other charters that collaborated with you on your custom song project with a proper role assignment system.
 
 ## Codebase
 

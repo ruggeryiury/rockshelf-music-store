@@ -1,8 +1,8 @@
 # Custom File Formats
 
-## Rockshelf Music Store Song Data
+## Rockshelf Song Data
 
-The _Rockshelf Music Store Song Data_ is a file container used specifically on Rockshelf Music Store server. The package contains raw binary data of the song. The file header has a fixed `0x30` (48) bytes.
+The _Rockshelf Song Data_ is a file container used specifically on Rockshelf Music Store server. The package contains raw binary data of the song. The file header has a fixed `0x30` (48) bytes.
 
 ### Header
 

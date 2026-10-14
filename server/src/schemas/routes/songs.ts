@@ -30,7 +30,13 @@ export const getSongDetailsSuccessSchema = genericServerResponse.extend({
 })
 export type GetSongDetailsSuccess = z.infer<typeof getSongDetailsSuccessSchema>
 
-export const getSongFileHeaderSuccessSchema = genericServerResponse.extend({
-	data: rb3FileHeaderSchema.optional(),
+export const getSongFileQuerystringSchema = z.object({
+	type: z.enum(['dta', 'mogg', 'midi', 'webp', 'png', 'png-ps3', 'png-xbox', 'milo']).default('dta').describe('The file you want to get from the song entry'),
+	format: z
+		.string()
+		.default('0')
+		.transform((val) => parseInt(val))
+		.pipe(z.int().nonnegative())
+		.describe('Controls the output format of the file, read the route description for accepted values'),
 })
-export type GetSongFileHeaderSuccess = z.infer<typeof getSongFileHeaderSuccessSchema>
+export type GetSongFileQuerystring = z.infer<typeof getSongFileQuerystringSchema>

@@ -3,7 +3,7 @@ import { pipeline } from 'node:stream/promises'
 
 import { DTAParser } from '../dta/DTAParser'
 import type { RB3CompatibleDTAFile } from '../dta/dtaStruct'
-import { type RB3FileHeaderObject, parseRB3FileHeader } from './parseRB3File'
+import { type RB3FileHeaderObject, parseRB3FileHeader } from './parseRB3FileHeader'
 
 export const RB3_HEADER_SIZE = 0x200
 export const RB3_HEADER_PADDING = 0x19c
